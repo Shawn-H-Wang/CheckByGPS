@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import henu.wh.checkbygps.register.RegisterActivity;
+import henu.wh.checkbygps.register.StudentSignUpActivity;
 import henu.wh.checkbygps.student.StdentSigninActivity;
 import henu.wh.checkbygps.teacher.TeacherSigninActivity;
 
@@ -47,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 case R.id.btn_signup:
                     // 跳转至注册界面
-                    intent = new Intent(MainActivity.this, SignUpActivity.class);
+                    intent = new Intent(MainActivity.this, RegisterActivity.class);
             }
             startActivity(intent);
         }
