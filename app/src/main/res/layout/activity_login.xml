@@ -5,7 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/background_img"
-    tools:context=".teacher.TeacherSigninActivity">
+    tools:context=".LoginActivity">
 
     <LinearLayout
         android:id="@+id/layout1_imgs"
@@ -27,7 +27,7 @@
             android:id="@+id/tv_henu"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="教师登陆界面"
+            android:text="登陆界面"
             android:textColor="#000000"
             android:textSize="20sp" />
 
@@ -51,9 +51,9 @@
             android:id="@+id/edittext_number"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="ID:"
+            android:hint="PHONE:"
             android:inputType="number"
-            android:maxLength="12" />
+            android:maxLength="11" />
     </LinearLayout>
 
     <LinearLayout

@@ -34,36 +34,21 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/main_l2"
+    <Button
+        android:id="@+id/btn_log_in"
+        android:layout_marginTop="120dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/main_l1"
-        android:layout_marginTop="120dp"
-        android:gravity="center"
-        android:orientation="horizontal">
+        android:text="Log in"
+        android:textAllCaps="false"/>
 
-        <Button
-            android:id="@+id/btn_student"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:text="Student Sign In"
-            android:textAllCaps="false" />
-
-        <Button
-            android:id="@+id/btn_teacher"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:text="Teacher Sign In"
-            android:textAllCaps="false" />
-
-    </LinearLayout>
 
     <Button
         android:id="@+id/btn_signup"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/main_l2"
+        android:layout_below="@id/btn_log_in"
         android:text="Sign Up"
         android:textAllCaps="false" />
 
