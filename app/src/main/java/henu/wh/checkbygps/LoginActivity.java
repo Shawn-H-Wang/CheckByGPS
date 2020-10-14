@@ -53,7 +53,7 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * <p>判断用户名与密码是否匹配，如果不匹配，返回false，否则返回true</p>
-     *
+     * <p>需要调用数据库进行查找</p>
      * @return
      */
     private boolean isRight(String username, String password) {

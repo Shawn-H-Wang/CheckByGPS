@@ -138,8 +138,10 @@
                 android:layout_width="300dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Password"
-                android:inputType="textPassword" />
+                android:hint="TestCode"
+                android:inputType="number"
+                android:maxLength="6" />
+
         </LinearLayout>
 
         <LinearLayout

@@ -9,6 +9,12 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import henu.wh.checkbygps.dbHelper.JdbcUtil;
+
 public class RegisterActivity extends AppCompatActivity {
 
     private Button mBtnback, mBtnregister, mBtngettestcode;
@@ -61,6 +67,8 @@ public class RegisterActivity extends AppCompatActivity {
         String usertestcode = eTtestcode.getText().toString();
         String userpasswd = eTpasswd.getText().toString();
         String userpdagain = eTpdagain.getText().toString();
+        boolean sex = rBtnmale.isChecked();
+        boolean identify = rBtnstudent.isChecked();
         if (username.isEmpty()) {
             showMessage("请输入用户名");
         } else if (!rBtnstudent.isChecked() && !rBtnteacher.isChecked()) {
@@ -78,7 +86,50 @@ public class RegisterActivity extends AppCompatActivity {
         } else if (!userpdagain.equals(userpasswd)) {
             showMessage("两次输入密码不一致，请重新输入");
         } else {
-            showMessage("注册成功");
+            if (insertInfo(userphone, username, userpasswd, sex, identify)) {
+                showMessage("注册成功");
+            }
+        }
+    }
+
+    /**
+     * <p>注册输入信息</p>
+     *
+     * @param userphone 用户手机号，表主键
+     * @param username  用户名
+     * @param password  用户密码
+     * @param sex       true为男性，false为女性
+     * @param identify  true为学生，false为教师
+     * @return true表示注册成功，false表示注册失败，失败并弹出错误信息
+     */
+    public boolean insertInfo(String userphone, String username, String password, boolean sex, boolean identify) {
+        JdbcUtil jdbcUtil = JdbcUtil.getInstance();
+        Connection conn = jdbcUtil.getConnection("AUDB", "root", "12345678");
+        if (conn == null) {
+            showMessage("数据库连接失败，请稍后尝试！！");
+            return false;
+        } else {
+//            String select = "SELECT ";
+            String sql = "INSERT INTO USER(phone, user, passwd, sex, identify) VALUES(?,?,?,?,?);";
+            try {
+                PreparedStatement pre = conn.prepareStatement(sql);
+                pre.setString(1, userphone);
+                pre.setString(2, username);
+                pre.setString(3, password);
+                pre.setBoolean(4, sex);
+                pre.setBoolean(5, identify);
+                return pre.execute();
+            } catch (SQLException e) {
+                showMessage("注册失败");
+                return false;
+            } finally {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
     }
 
