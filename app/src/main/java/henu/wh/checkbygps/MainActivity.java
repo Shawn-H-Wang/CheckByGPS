@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import henu.wh.checkbygps.dbHelper.JdbcUtil;
+
 public class MainActivity extends AppCompatActivity {
 
     private Button mBtnlogin, mBtnsignup;
@@ -15,6 +17,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // 连接数据库
+        JdbcUtil.mysql();
+
         mBtnlogin = (Button) findViewById(R.id.btn_log_in);
         mBtnsignup = (Button) findViewById(R.id.btn_signup);
         setListeners();

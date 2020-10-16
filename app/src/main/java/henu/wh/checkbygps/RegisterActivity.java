@@ -10,10 +10,9 @@ import android.widget.RadioButton;
 import android.widget.Toast;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-
-import henu.wh.checkbygps.dbHelper.JdbcUtil;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -103,34 +102,7 @@ public class RegisterActivity extends AppCompatActivity {
      * @return true表示注册成功，false表示注册失败，失败并弹出错误信息
      */
     public boolean insertInfo(String userphone, String username, String password, boolean sex, boolean identify) {
-        JdbcUtil jdbcUtil = JdbcUtil.getInstance();
-        Connection conn = jdbcUtil.getConnection("AUDB", "root", "12345678");
-        if (conn == null) {
-            showMessage("数据库连接失败，请稍后尝试！！");
-            return false;
-        } else {
-//            String select = "SELECT ";
-            String sql = "INSERT INTO USER(phone, user, passwd, sex, identify) VALUES(?,?,?,?,?);";
-            try {
-                PreparedStatement pre = conn.prepareStatement(sql);
-                pre.setString(1, userphone);
-                pre.setString(2, username);
-                pre.setString(3, password);
-                pre.setBoolean(4, sex);
-                pre.setBoolean(5, identify);
-                return pre.execute();
-            } catch (SQLException e) {
-                showMessage("注册失败");
-                return false;
-            } finally {
-                try {
-                    conn.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-
-        }
+        return false;
     }
 
     public void showMessage(String message) {
