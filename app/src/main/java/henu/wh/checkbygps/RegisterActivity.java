@@ -3,6 +3,7 @@ package henu.wh.checkbygps;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -10,9 +11,8 @@ import android.widget.RadioButton;
 import android.widget.Toast;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+
+import henu.wh.checkbygps.dbHelper.JdbcUtil;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -85,9 +85,14 @@ public class RegisterActivity extends AppCompatActivity {
         } else if (!userpdagain.equals(userpasswd)) {
             showMessage("两次输入密码不一致，请重新输入");
         } else {
-            if (insertInfo(userphone, username, userpasswd, sex, identify)) {
-                showMessage("注册成功");
-            }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    if (insertInfo(userphone, username, userpasswd, sex, identify)) {
+                        showMessage("注册成功");
+                    }
+                }
+            }).start();
         }
     }
 
@@ -102,11 +107,25 @@ public class RegisterActivity extends AppCompatActivity {
      * @return true表示注册成功，false表示注册失败，失败并弹出错误信息
      */
     public boolean insertInfo(String userphone, String username, String password, boolean sex, boolean identify) {
-        return false;
+        boolean flag = false;
+        // 与数据库建立连接
+        Connection conn = JdbcUtil.conn();
+        // 查询该账户是否被注册
+        if (JdbcUtil.select(conn, userphone)) { // 返回为true说明未被注册，则可以注册，将注册信息传入方法中
+            JdbcUtil.insert(conn, userphone, username, password, sex, identify);
+            flag = true;
+        } else {
+            showMessage("注册失败！该号码已被使用，请更换号码！");
+        }
+        // 关闭数据库
+        JdbcUtil.close(conn);
+        return flag;
     }
 
     public void showMessage(String message) {
+        Looper.prepare();
         Toast.makeText(RegisterActivity.this, message, Toast.LENGTH_SHORT).show();
+        Looper.loop();
     }
 
     public void initButton() {

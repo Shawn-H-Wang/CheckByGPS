@@ -21,7 +21,7 @@ android {
     }
 
     /*
-     * 指定jdk版本</p>
+     * 指定jdk版本
      * 此处需要指定jdk版本。否则Android Studio再添加依赖时会失败。
      */
     compileOptions {
@@ -43,13 +43,14 @@ buildscript {
 }
 
 dependencies {
+    implementation 'commons-httpclient:commons-httpclient:3.1'
+    implementation 'com.alibaba:fastjson:1.2.44'
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    // https://mvnrepository.com/artifact/mysql/mysql-connector-java
-    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.30'
+    implementation group: 'mysql', name: 'mysql-connector-java', version: '5.1.30'
 
 }

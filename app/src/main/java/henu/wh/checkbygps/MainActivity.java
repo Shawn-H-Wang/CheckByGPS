@@ -18,9 +18,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // 连接数据库
-        JdbcUtil.mysql();
-
         mBtnlogin = (Button) findViewById(R.id.btn_log_in);
         mBtnsignup = (Button) findViewById(R.id.btn_signup);
         setListeners();
