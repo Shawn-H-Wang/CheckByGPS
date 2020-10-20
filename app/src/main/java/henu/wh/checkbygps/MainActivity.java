@@ -7,8 +7,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-import henu.wh.checkbygps.dbHelper.JdbcUtil;
-
 public class MainActivity extends AppCompatActivity {
 
     private Button mBtnlogin, mBtnsignup;

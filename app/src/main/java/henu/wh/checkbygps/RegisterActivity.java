@@ -3,6 +3,7 @@ package henu.wh.checkbygps;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.Looper;
 import android.view.View;
 import android.widget.Button;
@@ -10,8 +11,13 @@ import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
+import com.mob.MobSDK;
+
 import java.sql.Connection;
 
+import cn.smssdk.EventHandler;
+import cn.smssdk.SMSSDK;
+import henu.wh.checkbygps.dbHelper.Helper;
 import henu.wh.checkbygps.dbHelper.JdbcUtil;
 
 public class RegisterActivity extends AppCompatActivity {
@@ -20,14 +26,23 @@ public class RegisterActivity extends AppCompatActivity {
     private EditText eTuser, eTphone, eTtestcode, eTpasswd, eTpdagain;
     private RadioButton rBtnmale, rBtnfemale, rBtnstudent, rBtnteacher;
 
+    private TimeCount mTimeCount;
+    private EventHandler eventHandler;
+
+    private final String APP_KEY = "3107a8f5189f8";
+    private final String APP_SECRET = "70088e2559f5bde6bd112fd9414b7b17";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // 初始化SMSSDK
+        MobSDK.init(this, APP_KEY, APP_SECRET);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
         initButton();
         initEditText();
         initRadioButton();
+        init();
 
         setListeners();
     }
@@ -39,6 +54,25 @@ public class RegisterActivity extends AppCompatActivity {
         mBtngettestcode.setOnClickListener(onClick);
     }
 
+    // 初始化验证事件
+    public void init() {
+        mTimeCount = new TimeCount(60000, 1000);
+        eventHandler = new EventHandler(){
+            @Override
+            public void afterEvent(int event, int result, Object data) {
+                if (result == SMSSDK.RESULT_COMPLETE) { // 回调完成
+                    if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {   // 提交验证码成功
+
+                    }
+                }
+            }
+        };
+        SMSSDK.registerEventHandler(eventHandler);
+    }
+
+    /**
+     * 事件监听器
+     */
     private class OnClick implements View.OnClickListener {
 
         @Override
@@ -52,11 +86,37 @@ public class RegisterActivity extends AppCompatActivity {
                         showMessage("请输入手机号");
                         break;
                     }
+                    if (Helper.checkPhone(eTphone.getText().toString())) {
+                        showMessage("请输入正确的手机号");
+                        break;
+                    }
                     break;
                 case R.id.btn_register:
                     register();
                     break;
             }
+        }
+    }
+
+    /**
+     * 计时器
+     */
+    private class TimeCount extends CountDownTimer {
+
+        public TimeCount(long millisInFuture, long countDownInterval) {
+            super(millisInFuture, countDownInterval);
+        }
+
+        @Override
+        public void onTick(long millisUntilFinished) {
+            mBtngettestcode.setClickable(false);
+            mBtngettestcode.setText(millisUntilFinished / 1000 + "秒");
+        }
+
+        @Override
+        public void onFinish() {
+            mBtngettestcode.setClickable(true);
+            mBtngettestcode.setText("获取验证码");
         }
     }
 
@@ -85,11 +145,15 @@ public class RegisterActivity extends AppCompatActivity {
         } else if (!userpdagain.equals(userpasswd)) {
             showMessage("两次输入密码不一致，请重新输入");
         } else {
+            //由于Android Studio访问mysql数据库不能在主进程Activity中直接访问，所以访问mysql的方法要写在新的线程中
             new Thread(new Runnable() {
                 @Override
                 public void run() {
                     if (insertInfo(userphone, username, userpasswd, sex, identify)) {
+                        // 这里开启了一个新进程，Toast调用法法师需要用到Looper的prepare进行准备
+                        Looper.prepare();
                         showMessage("注册成功");
+                        Looper.loop();
                     }
                 }
             }).start();
@@ -115,7 +179,10 @@ public class RegisterActivity extends AppCompatActivity {
             JdbcUtil.insert(conn, userphone, username, password, sex, identify);
             flag = true;
         } else {
+            // 这里开启了一个新进程，Toast调用法法师需要用到Looper的prepare进行准备
+            Looper.prepare();
             showMessage("注册失败！该号码已被使用，请更换号码！");
+            Looper.loop();
         }
         // 关闭数据库
         JdbcUtil.close(conn);
@@ -123,9 +190,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     public void showMessage(String message) {
-        Looper.prepare();
         Toast.makeText(RegisterActivity.this, message, Toast.LENGTH_SHORT).show();
-        Looper.loop();
     }
 
     public void initButton() {

@@ -19,6 +19,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="User"
+                android:textColor="@color/smssdk_black"
                 android:textSize="20sp" />
 
             <EditText
@@ -38,7 +39,8 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="身份"
+                android:text="Identification"
+                android:textColor="@color/smssdk_black"
                 android:textSize="20sp" />
 
             <RadioGroup
@@ -71,6 +73,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Sex"
+                android:textColor="@color/smssdk_black"
                 android:textSize="20sp" />
 
             <RadioGroup
@@ -103,6 +106,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Phone"
+                android:textColor="@color/smssdk_black"
                 android:textSize="20sp" />
 
             <EditText
@@ -117,8 +121,7 @@
             <Button
                 android:id="@+id/btn_getmodcode"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="获取验证码" />
+                android:layout_height="wrap_content" />
 
         </LinearLayout>
 
@@ -131,6 +134,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="TestCode"
+                android:textColor="@color/smssdk_black"
                 android:textSize="20sp" />
 
             <EditText
@@ -153,6 +157,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Password"
+                android:textColor="@color/smssdk_black"
                 android:textSize="20sp" />
 
             <EditText
@@ -173,6 +178,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Repeatpd"
+                android:textColor="@color/smssdk_black"
                 android:textSize="20sp" />
 
             <EditText

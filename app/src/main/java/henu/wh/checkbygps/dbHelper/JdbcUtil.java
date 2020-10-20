@@ -5,9 +5,7 @@ import android.util.Log;
 import java.sql.*;
 
 /**
- * 由于Android Studio访问mysql数据库不能在主进程中访问，
- * 所以访问mysql的方法要写在新的线程中，
- * 这里新建了一个类，将访问mysql的方法封装在类中（以下称数据库工具类），
+ * 这里新建了一个类，将访问mysql的方法封装在类中（以下称数据库工具类）
  * 再在主进程中调用数据库工具类中的具体方法来访问数据库
  */
 public class JdbcUtil {
