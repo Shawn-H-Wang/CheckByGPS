@@ -11,7 +11,8 @@ public class Helper {
      * @return
      */
     public static boolean checkPhone(String phone) {
-        Pattern pattern = Pattern.compile("^[1][3,5,6,7,8,9][1-9]{9}$");
+        String regex = "^((13[0-9])|(14[5|7])|(15([0-3]|[5-9]))|(17[013678])|(18[0,5-9]))\\d{8}$";
+        Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(phone);
         return matcher.matches();
     }

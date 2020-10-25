@@ -8,7 +8,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-public class LoginActivity extends AppCompatActivity {
+import henu.wh.checkbygps.help.Init;
+
+public class LoginActivity extends AppCompatActivity implements Init {
 
     private Button mBtnlogin, mBtnforgetpassword;
     private EditText eTuser, eTpassword;
@@ -53,14 +55,21 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    @Override
     public void initButton() {
         mBtnlogin = (Button) findViewById(R.id.btn_signin);
         mBtnforgetpassword = (Button) findViewById(R.id.btn_forgetpasswd);
     }
 
+    @Override
     public void initEditText() {
         eTuser = (EditText) findViewById(R.id.edittext_number);
         eTpassword = (EditText) findViewById(R.id.edittext_passwd);
+    }
+
+    @Override
+    public void initRadioButton() {
+
     }
 
     /**

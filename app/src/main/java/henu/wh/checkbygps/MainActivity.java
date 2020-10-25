@@ -7,7 +7,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
-public class MainActivity extends AppCompatActivity {
+import henu.wh.checkbygps.help.Init;
+
+public class MainActivity extends AppCompatActivity implements Init {
 
     private Button mBtnlogin, mBtnsignup;
 
@@ -16,8 +18,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mBtnlogin = (Button) findViewById(R.id.btn_log_in);
-        mBtnsignup = (Button) findViewById(R.id.btn_signup);
+        initButton();
+
         setListeners();
     }
 
@@ -25,6 +27,22 @@ public class MainActivity extends AppCompatActivity {
         OnClick onClick = new OnClick();
         mBtnlogin.setOnClickListener(onClick);
         mBtnsignup.setOnClickListener(onClick);
+    }
+
+    @Override
+    public void initButton() {
+        mBtnlogin = (Button) findViewById(R.id.btn_log_in);
+        mBtnsignup = (Button) findViewById(R.id.btn_signup);
+    }
+
+    @Override
+    public void initEditText() {
+
+    }
+
+    @Override
+    public void initRadioButton() {
+
     }
 
     private class OnClick implements View.OnClickListener {
