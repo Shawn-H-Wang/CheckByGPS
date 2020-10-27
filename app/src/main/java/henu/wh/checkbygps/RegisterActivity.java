@@ -3,6 +3,7 @@ package henu.wh.checkbygps;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Handler;
@@ -27,11 +28,12 @@ import henu.wh.checkbygps.help.Init;
 
 public class RegisterActivity extends AppCompatActivity implements Init {
 
-    private Button mBtnback, mBtnregister, mBtngettestcode;
-    private EditText eTuser, eTphone, eTtestcode, eTpasswd, eTpdagain;
+    private Button mBtnback, mBtnnext;
+    private EditText eTuser, eTpasswd, eTpdagain;
     private RadioButton rBtnmale, rBtnfemale, rBtnstudent, rBtnteacher;
 
-    private TimeCount mTimeCount;
+
+
     private EventHandler eventHandler;
     private Handler handler;
     private boolean flag;   // 检查验证码是否发送成功
@@ -44,13 +46,13 @@ public class RegisterActivity extends AppCompatActivity implements Init {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
+        MobSDK.init(RegisterActivity.this, APP_KEY, APP_SECRET);
+
         initButton();
         initEditText();
         initRadioButton();
 
         init_handler();
-
-        init_SMSSDK();
 
         setListeners();
     }
@@ -58,8 +60,7 @@ public class RegisterActivity extends AppCompatActivity implements Init {
     private void setListeners() {
         OnClick onClick = new OnClick();
         mBtnback.setOnClickListener(onClick);
-        mBtnregister.setOnClickListener(onClick);
-        mBtngettestcode.setOnClickListener(onClick);
+        mBtnnext.setOnClickListener(onClick);
     }
 
 
@@ -70,60 +71,28 @@ public class RegisterActivity extends AppCompatActivity implements Init {
 
         @Override
         public void onClick(View v) {
+            Intent intent = null;
             switch (v.getId()) {
                 case R.id.btn_back:
                     RegisterActivity.this.finish();
                     break;
-                case R.id.btn_getmodcode:
-                    String phone = eTphone.getText().toString();
-                    if (phone.isEmpty()) {
-                        showMessage("请输入手机号");
-                        break;
+                case R.id.btn_next:
+                    if (next()) {
+                        intent = new Intent(RegisterActivity.this, VerifyActivity.class);
+                        startActivity(intent);
                     }
-                    if (!Helper.checkPhone(phone)) {
-                        showMessage("请输入正确格式的手机号");
-                        break;
-                    }
-                    // 获取验证码
-                    SMSSDK.getVerificationCode("86", phone);    // 86代表中国区号
-                    break;
-                case R.id.btn_register:
-                    register();
                     break;
             }
         }
     }
 
-    /**
-     * 计时器
-     */
-    private class TimeCount extends CountDownTimer {
-
-        public TimeCount(long millisInFuture, long countDownInterval) {
-            super(millisInFuture, countDownInterval);
-        }
-
-        @Override
-        public void onTick(long millisUntilFinished) {
-            mBtngettestcode.setClickable(false);
-            mBtngettestcode.setText(millisUntilFinished / 1000 + "秒");
-        }
-
-        @Override
-        public void onFinish() {
-            mBtngettestcode.setClickable(true);
-            mBtngettestcode.setText("获取验证码");
-        }
-    }
-
-    private void register() {
+    private boolean next() {
         String username = eTuser.getText().toString();
-        String userphone = eTphone.getText().toString();
-        String usertestcode = eTtestcode.getText().toString();
         String userpasswd = eTpasswd.getText().toString();
         String userpdagain = eTpdagain.getText().toString();
         boolean sex = rBtnmale.isChecked();
         boolean identify = rBtnstudent.isChecked();
+        boolean tag = false;
         if (username.isEmpty()) {
             showMessage("请输入用户名");
             eTuser.requestFocus();
@@ -131,12 +100,6 @@ public class RegisterActivity extends AppCompatActivity implements Init {
             showMessage("请选择身份信息");
         } else if (!rBtnfemale.isChecked() && !rBtnmale.isChecked()) {
             showMessage("请选择性别");
-        } else if (userphone.isEmpty()) {
-            showMessage("请输入手机号");
-            eTphone.requestFocus();
-        } else if (usertestcode.isEmpty()) {
-            showMessage("请输入验证码");
-            eTtestcode.requestFocus();
         } else if (userpasswd.isEmpty()) {
             showMessage("请输入密码");
             eTpasswd.requestFocus();
@@ -147,54 +110,10 @@ public class RegisterActivity extends AppCompatActivity implements Init {
             showMessage("两次输入密码不一致，请重新输入");
             eTpdagain.requestFocus();
         } else {
-            if (usertestcode.length() != 6) {
-                showMessage("请输入完整的验证码");
-            } else {
-                SMSSDK.submitVerificationCode("86", userphone, usertestcode);
-                flag = false;
-            }
-            //由于Android Studio访问mysql数据库不能在主进程Activity中直接访问，所以访问mysql的方法要写在新的线程中
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    if (insertInfo(userphone, username, userpasswd, sex, identify)) {
-                        // 这里开启了一个新进程，Toast调用法法师需要用到Looper的prepare进行准备
-                        Looper.prepare();
-                        showMessage("注册成功");
-                        Looper.loop();
-                    }
-                }
-            }).start();
+            VerifyActivity.getData(username, userpasswd, sex, identify);
+            tag = true;
         }
-    }
-
-    /**
-     * <p>注册输入信息</p>
-     *
-     * @param userphone 用户手机号，表主键
-     * @param username  用户名
-     * @param password  用户密码
-     * @param sex       true为男性，false为女性
-     * @param identify  true为学生，false为教师
-     * @return true表示注册成功，false表示注册失败，失败并弹出错误信息
-     */
-    public boolean insertInfo(String userphone, String username, String password, boolean sex, boolean identify) {
-        boolean flag = false;
-        // 与数据库建立连接
-        Connection conn = JdbcUtil.conn();
-        // 查询该账户是否被注册
-        if (JdbcUtil.select(conn, userphone)) { // 返回为true说明未被注册，则可以注册，将注册信息传入方法中
-            JdbcUtil.insert(conn, userphone, username, password, sex, identify);
-            flag = true;
-        } else {
-            // 这里开启了一个新进程，Toast调用法法师需要用到Looper的prepare进行准备
-            Looper.prepare();
-            showMessage("注册失败！该号码已被使用，请更换号码！");
-            Looper.loop();
-        }
-        // 关闭数据库
-        JdbcUtil.close(conn);
-        return flag;
+        return tag;
     }
 
     public void showMessage(String message) {
@@ -204,15 +123,12 @@ public class RegisterActivity extends AppCompatActivity implements Init {
     @Override
     public void initButton() {
         mBtnback = (Button) findViewById(R.id.btn_back);
-        mBtnregister = (Button) findViewById(R.id.btn_register);
-        mBtngettestcode = (Button) findViewById(R.id.btn_getmodcode);
+        mBtnnext = (Button) findViewById(R.id.btn_next);
     }
 
     @Override
     public void initEditText() {
         eTuser = (EditText) findViewById(R.id.edit_signup);
-        eTphone = (EditText) findViewById(R.id.edit_signup_phone);
-        eTtestcode = (EditText) findViewById(R.id.edit_signup_tc);
         eTpasswd = (EditText) findViewById(R.id.edit_signup_pd);
         eTpdagain = (EditText) findViewById(R.id.edit_signup_again);
     }
@@ -226,8 +142,7 @@ public class RegisterActivity extends AppCompatActivity implements Init {
     }
 
     // 初始化SMSSDK
-    public void init_SMSSDK() {
-        MobSDK.init(RegisterActivity.this, APP_KEY, APP_SECRET);
+    public void init_SMSSDK(String phone) {
         EventHandler eventHandler = new EventHandler() { // 操作回调
             @Override
             public void afterEvent(int event, int result, Object data) {
@@ -239,6 +154,7 @@ public class RegisterActivity extends AppCompatActivity implements Init {
             }
         };
         SMSSDK.registerEventHandler(eventHandler);
+        SMSSDK.getVerificationCode("86", phone);    // 86代表中国区号
     }
 
     // 初始化Handler
@@ -264,7 +180,6 @@ public class RegisterActivity extends AppCompatActivity implements Init {
                     // 若操作失败
                     if (flag) {
                         showMessage("验证码获取失败，请重新获取");
-                        eTphone.requestFocus();
                     } else {
                         ((Throwable) data).printStackTrace();
                         showMessage("验证码错误");

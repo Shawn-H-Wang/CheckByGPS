@@ -2,6 +2,7 @@ package henu.wh.checkbygps;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -43,10 +44,11 @@ public class LoginActivity extends AppCompatActivity implements Init {
                         Toast.makeText(LoginActivity.this, "请输入用户名", Toast.LENGTH_SHORT).show();
                     } else if (password.isEmpty()) {
                         Toast.makeText(LoginActivity.this, "请输入密码", Toast.LENGTH_SHORT).show();
-                    } else if (isRight(username, password)) {
+                    } else if (!isRight(username, password)) {
                         Toast.makeText(LoginActivity.this, "密码错误，请重新输入", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(LoginActivity.this, "登陆成功！！", Toast.LENGTH_SHORT).show();
+//                        Intent intent = new Intent(LoginActivity.this);
                     }
                     break;
                 case R.id.btn_forgetpasswd:
@@ -79,6 +81,12 @@ public class LoginActivity extends AppCompatActivity implements Init {
      * @return
      */
     private boolean isRight(String username, String password) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+            }
+        });
         return false;
     }
 }
