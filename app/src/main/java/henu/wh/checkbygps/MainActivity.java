@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.Button;
 
 import henu.wh.checkbygps.help.Init;
+import henu.wh.checkbygps.register.RegisterActivity;
 
 public class MainActivity extends AppCompatActivity implements Init {
 

@@ -1,4 +1,4 @@
-package henu.wh.checkbygps;
+package henu.wh.checkbygps.register;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,26 +15,36 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.mob.MobSDK;
+
 import java.sql.Connection;
 
 import cn.smssdk.EventHandler;
 import cn.smssdk.SMSSDK;
-import henu.wh.checkbygps.dbHelper.Helper;
+import henu.wh.checkbygps.MainActivity;
+import henu.wh.checkbygps.R;
+import henu.wh.checkbygps.help.Helper;
 import henu.wh.checkbygps.dbHelper.JdbcUtil;
 import henu.wh.checkbygps.help.Init;
+import henu.wh.checkbygps.help.SysApplication;
 
 public class VerifyActivity extends AppCompatActivity implements Init {
 
     private static String username, userpasswd;
     private static boolean sex, identify;
+    private static boolean FLAG = false;
     private String code;
     private boolean flag;
 
     private EditText userphone, verifycode;
-    private Button mBtnverifyCode, mBtnregister;
+    private Button mBtnverifyCode, mBtnregister, mBtnback;
+
+    private final String APP_KEY = "3107a8f5189f8";
+    private final String APP_SECRET = "70088e2559f5bde6bd112fd9414b7b17";
 
     EventHandler eventHandler;
     TimeCount timeCount;
+
     /**
      * 使用Handler来分发Message对象到主线程中，处理事件
      */
@@ -45,30 +55,32 @@ public class VerifyActivity extends AppCompatActivity implements Init {
             int event = msg.arg1;
             int result = msg.arg2;
             Object data = msg.obj;
-            if (event == SMSSDK.EVENT_GET_VERIFICATION_CODE) {//获取验证码成功
-                if (result == SMSSDK.RESULT_COMPLETE) {
+            if (event == SMSSDK.EVENT_GET_VERIFICATION_CODE) { //获取验证码成功
+                if (result == SMSSDK.RESULT_COMPLETE) { //回调完成
                     showMessage("验证码发送成功");
+                    // 这里规定60s后才可以重新发送，即总时间为60s，每次变化的速率为1s
                     timeCount = new TimeCount(60000, 1000);
                     timeCount.start();
                     //回调完成
                     boolean smart = (Boolean) data;
                     if (smart) {
                         Toast.makeText(getApplicationContext(), "该手机号已经注册过，请重新输入", Toast.LENGTH_LONG).show();
-                        userphone.requestFocus();//焦点
+                        userphone.requestFocus();
                         return;
                     }
                 }
             }
-            //回调完成
-            if (result == SMSSDK.RESULT_COMPLETE) {
+            if (result == SMSSDK.RESULT_COMPLETE) { //回调完成
                 if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {//提交验证码成功
                     Log.d("SMSSDK", "验证码输入正确");
-                    register();
-                    startActivity(new Intent(VerifyActivity.this, MainActivity.class));
+                    register(); // 连接数据库进行注册
+                    if (VerifyActivity.FLAG) {
+                        SysApplication.getInstance().addActivity(VerifyActivity.this);
+                        SysApplication.getInstance().exit();
+                    }
                 }
-            } else {//其他出错情况
+            } else {    //回调失败
                 if (flag) {
-                    verifycode.setVisibility(View.VISIBLE);
                     Toast.makeText(getApplicationContext(), "验证码获取失败请重新获取", Toast.LENGTH_LONG).show();
                     userphone.requestFocus();
                 } else {
@@ -82,6 +94,8 @@ public class VerifyActivity extends AppCompatActivity implements Init {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verify);
+
+        MobSDK.init(VerifyActivity.this, APP_KEY, APP_SECRET);
 
         initButton();
         initEditText();
@@ -99,19 +113,23 @@ public class VerifyActivity extends AppCompatActivity implements Init {
             }
         };
 
-        SMSSDK.registerEventHandler(eventHandler);//注册短信回调（记得销毁，避免泄露内存）*/
+        SMSSDK.registerEventHandler(eventHandler);  //注册短信回调（记得销毁，避免泄露内存）
     }
 
     private void setListeners() {
         OnClick onClick = new OnClick();
         mBtnregister.setOnClickListener(onClick);
         mBtnverifyCode.setOnClickListener(onClick);
+        mBtnback.setOnClickListener(onClick);
     }
 
     private class OnClick implements View.OnClickListener {
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
+                case R.id.btn_verback:
+                    VerifyActivity.this.finish();
+                    break;
                 case R.id.btn_getverifycode:
                     if (userphone.getText().toString().isEmpty()) {
                         showMessage("请输入手机号");
@@ -119,7 +137,7 @@ public class VerifyActivity extends AppCompatActivity implements Init {
                         if (!Helper.checkPhone(userphone.getText().toString())) {
                             showMessage("请输入正确的手机号！");
                         } else {
-                            SMSSDK.getVerificationCode("86", userphone.getText().toString());   // 获取你的手机号的验证码
+                            SMSSDK.getVerificationCode("86", userphone.getText().toString());   // 获取验证码
                             verifycode.requestFocus();  //判断是否获得焦点
                         }
                     }
@@ -134,6 +152,9 @@ public class VerifyActivity extends AppCompatActivity implements Init {
         }
     }
 
+    /**
+     * 计时器
+     */
     class TimeCount extends CountDownTimer {
 
         public TimeCount(long millisInFuture, long countDownInterval) {
@@ -199,7 +220,8 @@ public class VerifyActivity extends AppCompatActivity implements Init {
             @Override
             public void run() {
                 if (insertInfo(phone, VerifyActivity.username, VerifyActivity.userpasswd, VerifyActivity.sex, VerifyActivity.identify)) {
-                    // 这里开启了一个新进程，Toast调用法法师需要用到Looper的prepare进行准备
+                    VerifyActivity.FLAG = true; // 表示注册成功
+                    // 这里开启了一个新进程，Toast调用法时需要用到Looper的prepare进行准备
                     Looper.prepare();
                     showMessage("注册成功");
                     Looper.loop();
@@ -224,7 +246,7 @@ public class VerifyActivity extends AppCompatActivity implements Init {
         // 与数据库建立连接
         Connection conn = JdbcUtil.conn();
         // 查询该账户是否被注册
-        if (JdbcUtil.select(conn, userphone)) { // 返回为true说明未被注册，则可以注册，将注册信息传入方法中
+        if (JdbcUtil.selectPhone(conn, userphone)) { // 返回为true说明未被注册，则可以注册，将注册信息传入方法中
             JdbcUtil.insert(conn, userphone, username, password, sex, identify);
             flag = true;
         } else {
@@ -240,14 +262,15 @@ public class VerifyActivity extends AppCompatActivity implements Init {
 
     @Override
     public void initButton() {
-        mBtnverifyCode = findViewById(R.id.btn_getverifycode);
-        mBtnregister = findViewById(R.id.btn_register);
+        mBtnverifyCode = (Button) findViewById(R.id.btn_getverifycode);
+        mBtnregister = (Button) findViewById(R.id.btn_register);
+        mBtnback = (Button) findViewById(R.id.btn_verback);
     }
 
     @Override
     public void initEditText() {
-        userphone = findViewById(R.id.edit_signup_phone);
-        verifycode = findViewById(R.id.edit_signup_verifycode);
+        userphone = (EditText) findViewById(R.id.edit_signup_phone);
+        verifycode = (EditText) findViewById(R.id.edit_signup_verifycode);
     }
 
     @Override

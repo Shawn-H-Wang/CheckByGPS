@@ -4,25 +4,35 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.sql.Connection;
+
+import henu.wh.checkbygps.dbHelper.JdbcUtil;
+import henu.wh.checkbygps.forgetpasswd.ForgetPasswordActivity;
 import henu.wh.checkbygps.help.Init;
 
 public class LoginActivity extends AppCompatActivity implements Init {
 
-    private Button mBtnlogin, mBtnforgetpassword;
+    private Button mBtnlogin, mBtnforgetpassword, mBtnback;
     private EditText eTuser, eTpassword;
+    private CheckBox cBremeber;
+
+    public static boolean flag = false; // 登陆成功标志
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
         initButton();
         initEditText();
+        cBremeber = (CheckBox) findViewById(R.id.cb_issave);
 
         setListeners();
     }
@@ -31,6 +41,7 @@ public class LoginActivity extends AppCompatActivity implements Init {
         OnClick onClick = new OnClick();
         mBtnlogin.setOnClickListener(onClick);
         mBtnforgetpassword.setOnClickListener(onClick);
+        mBtnback.setOnClickListener(onClick);
     }
 
     private class OnClick implements View.OnClickListener {
@@ -44,14 +55,28 @@ public class LoginActivity extends AppCompatActivity implements Init {
                         Toast.makeText(LoginActivity.this, "请输入用户名", Toast.LENGTH_SHORT).show();
                     } else if (password.isEmpty()) {
                         Toast.makeText(LoginActivity.this, "请输入密码", Toast.LENGTH_SHORT).show();
-                    } else if (!isRight(username, password)) {
-                        Toast.makeText(LoginActivity.this, "密码错误，请重新输入", Toast.LENGTH_SHORT).show();
                     } else {
-                        Toast.makeText(LoginActivity.this, "登陆成功！！", Toast.LENGTH_SHORT).show();
-//                        Intent intent = new Intent(LoginActivity.this);
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (isRight(username, password)) {
+                                    LoginActivity.flag = true;
+                                    Looper.prepare();
+                                    Toast.makeText(LoginActivity.this, "登陆成功！", Toast.LENGTH_SHORT).show();
+                                    Looper.loop();
+                                }
+                            }
+                        }).start();
+                    }
+                    if (LoginActivity.flag) {
+//                        startActivity(new Intent(LoginActivity.this, null));    // 如果登陆成功，跳转至主界面
                     }
                     break;
                 case R.id.btn_forgetpasswd:
+                    startActivity(new Intent(LoginActivity.this, ForgetPasswordActivity.class));
+                    break;
+                case R.id.btn_login_back:
+                    LoginActivity.this.finish();
                     break;
             }
         }
@@ -60,6 +85,7 @@ public class LoginActivity extends AppCompatActivity implements Init {
     @Override
     public void initButton() {
         mBtnlogin = (Button) findViewById(R.id.btn_signin);
+        mBtnback = (Button) findViewById(R.id.btn_login_back);
         mBtnforgetpassword = (Button) findViewById(R.id.btn_forgetpasswd);
     }
 
@@ -81,12 +107,22 @@ public class LoginActivity extends AppCompatActivity implements Init {
      * @return
      */
     private boolean isRight(String username, String password) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-
+        boolean flag = false;
+        Connection conn = JdbcUtil.conn();
+        if (JdbcUtil.isExist(conn, username)) {
+            if (JdbcUtil.selectPassword(conn, username, password)) {
+                flag = true;    // 表示匹配成功
+            } else {
+                Looper.prepare();
+                Toast.makeText(LoginActivity.this, "密码输入错误，请重新输入！", Toast.LENGTH_SHORT).show();
+                Looper.loop();
             }
-        });
-        return false;
+        } else {
+            Looper.prepare();
+            Toast.makeText(LoginActivity.this, "用户不存在，请先注册！", Toast.LENGTH_SHORT).show();
+            Looper.loop();
+        }
+        JdbcUtil.close(conn);
+        return flag;
     }
 }

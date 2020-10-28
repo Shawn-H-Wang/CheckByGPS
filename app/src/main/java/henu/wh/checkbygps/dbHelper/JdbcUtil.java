@@ -35,7 +35,7 @@ public class JdbcUtil {
         return conn;
     }
 
-    public static boolean select(Connection conn, String userphone) {
+    public static boolean selectPhone(Connection conn, String userphone) {
         boolean flag = true;
         String sql = "SELECT phone FROM USER WHERE phone='" + userphone + "'";
         try {
@@ -45,6 +45,50 @@ public class JdbcUtil {
                 if (rs.next()) {
                     Log.e(TAG, "该号码已被使用，需要更换号码！");
                     flag = false;
+                }
+                stmt.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return flag;
+    }
+
+    public static boolean selectPassword(Connection conn, String userphone, String pd) {
+        boolean flag = false;
+        String sql = "SELECT passwd FROM USER WHERE phone='" + userphone + "'";
+        try {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql);
+                if (rs.next()) {
+                    Log.d(TAG, "用户存在，查找成功！");
+                    String rs1 = rs.getString(1);
+                    if (rs1.equals(pd)) {
+                        flag = true;
+                        Log.d(TAG, "密码输入正确！");
+                    } else {
+                        Log.e(TAG, "密码输入错误！");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return flag;
+    }
+
+    public static boolean isExist(Connection conn, String userphone) {
+        boolean flag = false;
+        String sql = "SELECT phone FROM USER WHERE phone='" + userphone + "'";
+        try {
+            if (conn != null) { // conn不为null表明数据库建立成功
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql);
+                if (rs.next()) {    // 如果查询有结果，返回true，说明存在！
+                    flag = true;
+                } else {
+                    Log.e(TAG, "用户不存在！");
                 }
                 stmt.close();
             }
@@ -65,13 +109,29 @@ public class JdbcUtil {
                 ps.setBoolean(4, sex);
                 ps.setBoolean(5, identify);
                 ps.executeUpdate();
-                Log.d(TAG, "数据插入成功|"+"插入数据为{" + userphone + "," + username + "," + password + "," + sex + "," + identify+ "}");
+                Log.d(TAG, "数据插入成功|" + "插入数据为{" + userphone + "," + username + "," + password + "," + sex + "," + identify + "}");
                 ps.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
+    }
+
+    public static void update(Connection conn, String phone, String password) {
+        String sql = "update USER set passwd = ? where phone = ?";
+        try {
+            if (conn != null) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setString(1, password);
+                ps.setString(2, phone);
+                ps.executeUpdate();
+                Log.d(TAG, "密码修改成功|" + "修改用户密码信息为：{" + password + "," + phone + "}");
+                ps.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void close(Connection conn) {

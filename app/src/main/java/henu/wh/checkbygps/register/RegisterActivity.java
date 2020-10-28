@@ -1,13 +1,11 @@
-package henu.wh.checkbygps;
+package henu.wh.checkbygps.register;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.Handler;
-import android.os.Looper;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
@@ -18,13 +16,11 @@ import android.widget.Toast;
 
 import com.mob.MobSDK;
 
-import java.sql.Connection;
-
 import cn.smssdk.EventHandler;
 import cn.smssdk.SMSSDK;
-import henu.wh.checkbygps.dbHelper.Helper;
-import henu.wh.checkbygps.dbHelper.JdbcUtil;
+import henu.wh.checkbygps.R;
 import henu.wh.checkbygps.help.Init;
+import henu.wh.checkbygps.help.SysApplication;
 
 public class RegisterActivity extends AppCompatActivity implements Init {
 
@@ -32,27 +28,14 @@ public class RegisterActivity extends AppCompatActivity implements Init {
     private EditText eTuser, eTpasswd, eTpdagain;
     private RadioButton rBtnmale, rBtnfemale, rBtnstudent, rBtnteacher;
 
-
-
-    private EventHandler eventHandler;
-    private Handler handler;
-    private boolean flag;   // 检查验证码是否发送成功
-
-    private final String APP_KEY = "3107a8f5189f8";
-    private final String APP_SECRET = "70088e2559f5bde6bd112fd9414b7b17";
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        MobSDK.init(RegisterActivity.this, APP_KEY, APP_SECRET);
-
         initButton();
         initEditText();
         initRadioButton();
-
-        init_handler();
 
         setListeners();
     }
@@ -78,6 +61,7 @@ public class RegisterActivity extends AppCompatActivity implements Init {
                     break;
                 case R.id.btn_next:
                     if (next()) {
+                        SysApplication.getInstance().addActivity(RegisterActivity.this);
                         intent = new Intent(RegisterActivity.this, VerifyActivity.class);
                         startActivity(intent);
                     }
@@ -139,60 +123,6 @@ public class RegisterActivity extends AppCompatActivity implements Init {
         rBtnteacher = (RadioButton) findViewById(R.id.rbt_teacher);
         rBtnmale = (RadioButton) findViewById(R.id.rbt_male);
         rBtnfemale = (RadioButton) findViewById(R.id.rbt_female);
-    }
-
-    // 初始化SMSSDK
-    public void init_SMSSDK(String phone) {
-        EventHandler eventHandler = new EventHandler() { // 操作回调
-            @Override
-            public void afterEvent(int event, int result, Object data) {
-                Message msg = new Message();
-                msg.arg1 = event;
-                msg.arg2 = result;
-                msg.obj = data;
-                handler.sendMessage(msg);
-            }
-        };
-        SMSSDK.registerEventHandler(eventHandler);
-        SMSSDK.getVerificationCode("86", phone);    // 86代表中国区号
-    }
-
-    // 初始化Handler
-    public void init_handler() {
-        handler = new Handler() {
-            @Override
-            public void handleMessage(@NonNull Message msg) {
-                super.handleMessage(msg);
-                int event = msg.arg1;
-                int result = msg.arg2;
-                Object data = msg.obj;
-
-                if (result == SMSSDK.RESULT_COMPLETE) {
-                    // 若操作成功
-                    if (event == SMSSDK.EVENT_GET_VERIFICATION_CODE) {
-                        // 获取校验码
-                        showMessage("验证码已发送");
-                    } else if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {
-                        showMessage("验证成功");
-                        Log.e("", "");
-                    }
-                } else {
-                    // 若操作失败
-                    if (flag) {
-                        showMessage("验证码获取失败，请重新获取");
-                    } else {
-                        ((Throwable) data).printStackTrace();
-                        showMessage("验证码错误");
-                    }
-                }
-            }
-        };
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        SMSSDK.unregisterAllEventHandler();  // 注销回调接口
     }
 
 }

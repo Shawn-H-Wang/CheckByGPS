@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@drawable/background_img"
+    android:orientation="vertical"
     tools:context=".LoginActivity">
 
     <LinearLayout
@@ -96,12 +96,12 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/btn_signin"
+            android:id="@+id/btn_login_back"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="10dp"
-            android:text="Sign In"
+            android:text="Back"
             android:textAllCaps="false" />
 
         <Button
@@ -114,5 +114,22 @@
             android:textAllCaps="false" />
 
     </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layout3_btns"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_signin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sign In"
+            android:textAllCaps="false" />
+
+    </LinearLayout>
+
 
 </RelativeLayout>
