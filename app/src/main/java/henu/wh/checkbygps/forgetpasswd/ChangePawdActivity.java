@@ -14,10 +14,10 @@ import android.widget.Toast;
 import java.sql.Connection;
 
 import henu.wh.checkbygps.LoginActivity;
+import henu.wh.checkbygps.MainActivity;
 import henu.wh.checkbygps.R;
 import henu.wh.checkbygps.dbHelper.JdbcUtil;
 import henu.wh.checkbygps.help.Init;
-import henu.wh.checkbygps.help.SysApplication;
 
 public class ChangePawdActivity extends AppCompatActivity implements Init {
 
@@ -31,9 +31,7 @@ public class ChangePawdActivity extends AppCompatActivity implements Init {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_pawd);
 
-        initButton();
-        initEditText();
-
+        initViews();
         setListeners();
     }
 
@@ -96,8 +94,10 @@ public class ChangePawdActivity extends AppCompatActivity implements Init {
                                 }
                             }
                         }).start();
-                        SysApplication.getInstance().addActivity(ChangePawdActivity.this);
-                        SysApplication.getInstance().exit();
+                        Intent intent = new Intent();
+                        intent.setClass(ChangePawdActivity.this, LoginActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                        startActivity(intent);
                     }
                     break;
             }
@@ -106,19 +106,10 @@ public class ChangePawdActivity extends AppCompatActivity implements Init {
     }
 
     @Override
-    public void initButton() {
+    public void initViews() {
         mBtnback = (Button) findViewById(R.id.btn_change_back);
         mBtncpd = (Button) findViewById(R.id.btn_change_cpd);
-    }
-
-    @Override
-    public void initEditText() {
         password = (EditText) findViewById(R.id.edit_change_pawd);
         repet_password = (EditText) findViewById(R.id.edit_change_repete);
-    }
-
-    @Override
-    public void initRadioButton() {
-
     }
 }

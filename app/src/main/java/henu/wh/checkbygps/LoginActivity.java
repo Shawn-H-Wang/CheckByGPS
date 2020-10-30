@@ -2,13 +2,17 @@ package henu.wh.checkbygps;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -17,6 +21,7 @@ import java.sql.Connection;
 import henu.wh.checkbygps.dbHelper.JdbcUtil;
 import henu.wh.checkbygps.forgetpasswd.ForgetPasswordActivity;
 import henu.wh.checkbygps.help.Init;
+import henu.wh.checkbygps.home.HomeActivity;
 
 public class LoginActivity extends AppCompatActivity implements Init {
 
@@ -24,17 +29,16 @@ public class LoginActivity extends AppCompatActivity implements Init {
     private EditText eTuser, eTpassword;
     private CheckBox cBremeber;
 
-    public static boolean flag = false; // 登陆成功标志
+    public volatile static boolean FLAG = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        initButton();
-        initEditText();
+        initViews();
         cBremeber = (CheckBox) findViewById(R.id.cb_issave);
-
         setListeners();
+
     }
 
     private void setListeners() {
@@ -49,27 +53,25 @@ public class LoginActivity extends AppCompatActivity implements Init {
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.btn_signin:
-                    String username = eTuser.getText().toString();
+                    String userphone = eTuser.getText().toString();
                     String password = eTpassword.getText().toString();
-                    if (username.isEmpty()) {
+                    if (userphone.isEmpty()) {
                         Toast.makeText(LoginActivity.this, "请输入用户名", Toast.LENGTH_SHORT).show();
                     } else if (password.isEmpty()) {
                         Toast.makeText(LoginActivity.this, "请输入密码", Toast.LENGTH_SHORT).show();
                     } else {
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (isRight(username, password)) {
-                                    LoginActivity.flag = true;
-                                    Looper.prepare();
-                                    Toast.makeText(LoginActivity.this, "登陆成功！", Toast.LENGTH_SHORT).show();
-                                    Looper.loop();
-                                }
-                            }
-                        }).start();
-                    }
-                    if (LoginActivity.flag) {
-//                        startActivity(new Intent(LoginActivity.this, null));    // 如果登陆成功，跳转至主界面
+                        login(userphone, password);
+                        try {
+                            Thread.sleep(500); // 这里一定要设置等待时间，让子线程对信号量进行修改
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        if (LoginActivity.FLAG) {
+                            Intent intent = new Intent();
+                            intent.setClass(LoginActivity.this, HomeActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);    // 如果登陆成功，跳转至主界面
+                        }
                     }
                     break;
                 case R.id.btn_forgetpasswd:
@@ -83,21 +85,12 @@ public class LoginActivity extends AppCompatActivity implements Init {
     }
 
     @Override
-    public void initButton() {
+    public void initViews() {
         mBtnlogin = (Button) findViewById(R.id.btn_signin);
         mBtnback = (Button) findViewById(R.id.btn_login_back);
         mBtnforgetpassword = (Button) findViewById(R.id.btn_forgetpasswd);
-    }
-
-    @Override
-    public void initEditText() {
         eTuser = (EditText) findViewById(R.id.edittext_number);
         eTpassword = (EditText) findViewById(R.id.edittext_passwd);
-    }
-
-    @Override
-    public void initRadioButton() {
-
     }
 
     /**
@@ -124,5 +117,19 @@ public class LoginActivity extends AppCompatActivity implements Init {
         }
         JdbcUtil.close(conn);
         return flag;
+    }
+
+    private void login(String userphone, String password) {
+        new Thread(new Runnable() {
+            @Override
+            public synchronized void run() {
+                if (isRight(userphone, password)) {
+                    LoginActivity.FLAG = true;
+                    Looper.prepare();
+                    Toast.makeText(LoginActivity.this, "登陆成功！", Toast.LENGTH_SHORT).show();
+                    Looper.loop();
+                }
+            }
+        }).start();
     }
 }

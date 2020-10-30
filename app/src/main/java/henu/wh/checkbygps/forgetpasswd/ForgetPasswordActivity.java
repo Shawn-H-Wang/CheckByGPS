@@ -21,8 +21,6 @@ import cn.smssdk.SMSSDK;
 import henu.wh.checkbygps.R;
 import henu.wh.checkbygps.help.Helper;
 import henu.wh.checkbygps.help.Init;
-import henu.wh.checkbygps.help.SysApplication;
-import henu.wh.checkbygps.register.VerifyActivity;
 
 public class ForgetPasswordActivity extends AppCompatActivity implements Init {
 
@@ -54,18 +52,11 @@ public class ForgetPasswordActivity extends AppCompatActivity implements Init {
                     showMessage("验证码发送成功");
                     timeCount = new TimeCount(60000, 1000);
                     timeCount.start();
-                    //回调完成
-                    boolean smart = (Boolean) data;
-                    if (smart) {
-                        Toast.makeText(getApplicationContext(), "该手机号已经注册过，请重新输入", Toast.LENGTH_LONG).show();
-                        return;
-                    }
                 }
             }
             if (result == SMSSDK.RESULT_COMPLETE) { //回调完成
                 if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {//提交验证码成功
                     Log.d("SMSSDK", "验证码输入正确");
-                    SysApplication.getInstance().addActivity(ForgetPasswordActivity.this);
                     startActivity(new Intent(ForgetPasswordActivity.this, ChangePawdActivity.class));
                 }
             } else {    //回调失败
@@ -84,9 +75,7 @@ public class ForgetPasswordActivity extends AppCompatActivity implements Init {
         setContentView(R.layout.activity_forget_password);
         MobSDK.init(ForgetPasswordActivity.this, APP_KEY, APP_SECRET);
 
-        initButton();
-        initEditText();
-
+        initViews();
         setListeners();
 
         eventHandler = new EventHandler() {
@@ -176,21 +165,12 @@ public class ForgetPasswordActivity extends AppCompatActivity implements Init {
     }
 
     @Override
-    public void initButton() {
+    public void initViews() {
         mBtnback = (Button) findViewById(R.id.btn_back_pawd);
         mBtngetvc = (Button) findViewById(R.id.btn_get_vc_pawd);
         mBtnnext = (Button) findViewById(R.id.btn_next_pawd);
-    }
-
-    @Override
-    public void initEditText() {
         userphone = (EditText) findViewById(R.id.edit_forgetpawd_phone);
         verifycode = (EditText) findViewById(R.id.edit_forgetpawd_verifycode);
-    }
-
-    @Override
-    public void initRadioButton() {
-
     }
 
     public boolean judgeIsEmpty() {

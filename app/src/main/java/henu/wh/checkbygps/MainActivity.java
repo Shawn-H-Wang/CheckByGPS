@@ -19,7 +19,7 @@ public class MainActivity extends AppCompatActivity implements Init {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initButton();
+        initViews();
 
         setListeners();
     }
@@ -31,19 +31,9 @@ public class MainActivity extends AppCompatActivity implements Init {
     }
 
     @Override
-    public void initButton() {
+    public void initViews() {
         mBtnlogin = (Button) findViewById(R.id.btn_log_in);
         mBtnsignup = (Button) findViewById(R.id.btn_signup);
-    }
-
-    @Override
-    public void initEditText() {
-
-    }
-
-    @Override
-    public void initRadioButton() {
-
     }
 
     private class OnClick implements View.OnClickListener {

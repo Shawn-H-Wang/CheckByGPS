@@ -1,26 +1,17 @@
 package henu.wh.checkbygps.register;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.Toast;
 
-import com.mob.MobSDK;
-
-import cn.smssdk.EventHandler;
-import cn.smssdk.SMSSDK;
 import henu.wh.checkbygps.R;
 import henu.wh.checkbygps.help.Init;
-import henu.wh.checkbygps.help.SysApplication;
 
 public class RegisterActivity extends AppCompatActivity implements Init {
 
@@ -33,10 +24,7 @@ public class RegisterActivity extends AppCompatActivity implements Init {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        initButton();
-        initEditText();
-        initRadioButton();
-
+        initViews();
         setListeners();
     }
 
@@ -45,7 +33,6 @@ public class RegisterActivity extends AppCompatActivity implements Init {
         mBtnback.setOnClickListener(onClick);
         mBtnnext.setOnClickListener(onClick);
     }
-
 
     /**
      * 事件监听器
@@ -61,7 +48,6 @@ public class RegisterActivity extends AppCompatActivity implements Init {
                     break;
                 case R.id.btn_next:
                     if (next()) {
-                        SysApplication.getInstance().addActivity(RegisterActivity.this);
                         intent = new Intent(RegisterActivity.this, VerifyActivity.class);
                         startActivity(intent);
                     }
@@ -77,17 +63,17 @@ public class RegisterActivity extends AppCompatActivity implements Init {
         boolean sex = rBtnmale.isChecked();
         boolean identify = rBtnstudent.isChecked();
         boolean tag = false;
-        if (username.isEmpty()) {
+        if (username.trim().isEmpty()) {
             showMessage("请输入用户名");
             eTuser.requestFocus();
         } else if (!rBtnstudent.isChecked() && !rBtnteacher.isChecked()) {
             showMessage("请选择身份信息");
         } else if (!rBtnfemale.isChecked() && !rBtnmale.isChecked()) {
             showMessage("请选择性别");
-        } else if (userpasswd.isEmpty()) {
+        } else if (userpasswd.trim().isEmpty()) {
             showMessage("请输入密码");
             eTpasswd.requestFocus();
-        } else if (userpdagain.isEmpty()) {
+        } else if (userpdagain.trim().isEmpty()) {
             showMessage("请再次输入密码确认");
             eTpdagain.requestFocus();
         } else if (!userpdagain.equals(userpasswd)) {
@@ -105,20 +91,12 @@ public class RegisterActivity extends AppCompatActivity implements Init {
     }
 
     @Override
-    public void initButton() {
+    public void initViews() {
         mBtnback = (Button) findViewById(R.id.btn_back);
         mBtnnext = (Button) findViewById(R.id.btn_next);
-    }
-
-    @Override
-    public void initEditText() {
         eTuser = (EditText) findViewById(R.id.edit_signup);
         eTpasswd = (EditText) findViewById(R.id.edit_signup_pd);
         eTpdagain = (EditText) findViewById(R.id.edit_signup_again);
-    }
-
-    @Override
-    public void initRadioButton() {
         rBtnstudent = (RadioButton) findViewById(R.id.rbt_student);
         rBtnteacher = (RadioButton) findViewById(R.id.rbt_teacher);
         rBtnmale = (RadioButton) findViewById(R.id.rbt_male);
