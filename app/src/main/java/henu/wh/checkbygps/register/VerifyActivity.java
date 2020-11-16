@@ -32,7 +32,7 @@ public class VerifyActivity extends AppCompatActivity implements Init {
 
     private static String username, userpasswd;
     private static boolean sex, identify;
-    private static boolean FLAG = false;
+    private static volatile boolean FLAG = false;
     private String code;
     private boolean flag;
 
@@ -66,6 +66,11 @@ public class VerifyActivity extends AppCompatActivity implements Init {
                 if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {//提交验证码成功
                     Log.d("SMSSDK", "验证码输入正确");
                     register(); // 连接数据库进行注册
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     if (VerifyActivity.FLAG) {
                         Intent intent = new Intent();
                         intent.setClass(VerifyActivity.this, MainActivity.class);

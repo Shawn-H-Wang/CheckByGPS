@@ -2,17 +2,12 @@ package henu.wh.checkbygps;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Looper;
-import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -22,6 +17,7 @@ import henu.wh.checkbygps.dbHelper.JdbcUtil;
 import henu.wh.checkbygps.forgetpasswd.ForgetPasswordActivity;
 import henu.wh.checkbygps.help.Init;
 import henu.wh.checkbygps.home.HomeActivity;
+import henu.wh.checkbygps.role.User;
 
 public class LoginActivity extends AppCompatActivity implements Init {
 
@@ -30,6 +26,7 @@ public class LoginActivity extends AppCompatActivity implements Init {
     private CheckBox cBremeber;
 
     public volatile static boolean FLAG = false;
+    public volatile static User user = new User();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,13 +57,16 @@ public class LoginActivity extends AppCompatActivity implements Init {
                     } else if (password.isEmpty()) {
                         Toast.makeText(LoginActivity.this, "请输入密码", Toast.LENGTH_SHORT).show();
                     } else {
-                        login(userphone, password);
+                        login(user, userphone, password);
                         try {
                             Thread.sleep(500); // 这里一定要设置等待时间，让子线程对信号量进行修改
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                         if (LoginActivity.FLAG) {
+                            HomeActivity.setUser(LoginActivity.user);
+                            eTuser.setText("");
+                            eTpassword.setText("");
                             Intent intent = new Intent();
                             intent.setClass(LoginActivity.this, HomeActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -99,11 +99,11 @@ public class LoginActivity extends AppCompatActivity implements Init {
      *
      * @return
      */
-    private boolean isRight(String username, String password) {
+    private boolean isRight(User user, String username, String password) {
         boolean flag = false;
         Connection conn = JdbcUtil.conn();
         if (JdbcUtil.isExist(conn, username)) {
-            if (JdbcUtil.selectPassword(conn, username, password)) {
+            if (JdbcUtil.selectPassword(conn, user, username, password)) {
                 flag = true;    // 表示匹配成功
             } else {
                 Looper.prepare();
@@ -119,11 +119,11 @@ public class LoginActivity extends AppCompatActivity implements Init {
         return flag;
     }
 
-    private void login(String userphone, String password) {
+    private void login(User user, String userphone, String password) {
         new Thread(new Runnable() {
             @Override
             public synchronized void run() {
-                if (isRight(userphone, password)) {
+                if (isRight(user, userphone, password)) {
                     LoginActivity.FLAG = true;
                     Looper.prepare();
                     Toast.makeText(LoginActivity.this, "登陆成功！", Toast.LENGTH_SHORT).show();

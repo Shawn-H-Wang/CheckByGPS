@@ -59,7 +59,7 @@ public class ChangePawdActivity extends AppCompatActivity implements Init {
             Toast.makeText(ChangePawdActivity.this, "账号不存在，请先进行注册！", Toast.LENGTH_SHORT).show();
             Looper.loop();
         } else {
-            JdbcUtil.update(conn, phone, newPassword);
+            JdbcUtil.updatepassword(conn, phone, newPassword);
             flag = true;
         }
         JdbcUtil.close(conn);

@@ -4,6 +4,8 @@ import android.util.Log;
 
 import java.sql.*;
 
+import henu.wh.checkbygps.role.User;
+
 /**
  * 这里新建了一个类，将访问mysql的方法封装在类中（以下称数据库工具类）
  * 再在主进程中调用数据库工具类中的具体方法来访问数据库
@@ -54,23 +56,29 @@ public class JdbcUtil {
         return flag;
     }
 
-    public static boolean selectPassword(Connection conn, String userphone, String pd) {
+    public static boolean selectPassword(Connection conn, User user, String userphone, String pd) {
         boolean flag = false;
-        String sql = "SELECT passwd FROM USER WHERE phone='" + userphone + "'";
+        String sql = "SELECT * FROM USER WHERE phone='" + userphone + "'";
         try {
             if (conn != null) {
                 Statement stmt = conn.createStatement();
                 ResultSet rs = stmt.executeQuery(sql);
                 if (rs.next()) {
                     Log.d(TAG, "用户存在，查找成功！");
-                    String rs1 = rs.getString(1);
-                    if (rs1.equals(pd)) {
+                    String phone = rs.getString("phone");
+                    String username = rs.getString("user");
+                    String password = rs.getString("passwd");
+                    boolean sex = rs.getBoolean("sex");
+                    boolean identify = rs.getBoolean("identify");
+                    user.set(phone, username, password, sex, identify);
+                    if (password.equals(pd)) {
                         flag = true;
                         Log.d(TAG, "密码输入正确！");
                     } else {
                         Log.e(TAG, "密码输入错误！");
                     }
                 }
+                stmt.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -118,7 +126,14 @@ public class JdbcUtil {
 
     }
 
-    public static void update(Connection conn, String phone, String password) {
+    /**
+     * 通过限定手机号进行密码修改
+     *
+     * @param conn
+     * @param phone
+     * @param password
+     */
+    public static void updatepassword(Connection conn, String phone, String password) {
         String sql = "update USER set passwd = ? where phone = ?";
         try {
             if (conn != null) {
@@ -128,6 +143,28 @@ public class JdbcUtil {
                 ps.executeUpdate();
                 Log.d(TAG, "密码修改成功|" + "修改用户密码信息为：{" + password + "," + phone + "}");
                 ps.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void selectClass(Connection conn, String phone, String clas, String table) {
+        String sql = "SELECT class FROM " + table + " WHERE phone='" + phone + "'";
+        try {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql);
+                if (rs.next()) {
+                    Log.d(TAG, "用户存在，查找成功！");
+                    String c = rs.getString("class");
+                    if (!c.isEmpty()) {
+                        clas = "班级：" + c;
+                    } else {
+                        clas = "班级：尚未绑定班级";
+                    }
+                }
+                stmt.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();
