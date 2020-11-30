@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/tab_messages"
+        android:icon="@drawable/bottom_message_selector"
+        android:title="消息" />
+    <item
+        android:id="@+id/tab_groups"
+        android:icon="@drawable/bottom_group_selector"
+        android:title="群组" />
+    <item
+        android:id="@+id/tab_my_info"
+        android:icon="@drawable/bottom_me_selector"
+        android:title="我" />
+</menu>

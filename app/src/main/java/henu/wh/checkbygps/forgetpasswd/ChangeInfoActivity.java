@@ -14,58 +14,46 @@ import android.widget.Toast;
 import java.sql.Connection;
 
 import henu.wh.checkbygps.LoginActivity;
-import henu.wh.checkbygps.MainActivity;
 import henu.wh.checkbygps.R;
 import henu.wh.checkbygps.dbHelper.JdbcUtil;
 import henu.wh.checkbygps.help.Init;
 import henu.wh.checkbygps.help.MD5Utils;
 
-public class ChangePawdActivity extends AppCompatActivity implements Init {
+public class ChangeInfoActivity extends AppCompatActivity implements Init {
 
     private Button mBtnback, mBtncpd;
-    private EditText password, repet_password;
+    private EditText newname;
 
     private static String phone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_change_pawd);
+        setContentView(R.layout.activity_change_info);
 
         initViews();
         setListeners();
     }
 
-    public static void getData(String phone) {
-        ChangePawdActivity.phone = phone;
-    }
-
-    private void setListeners() {
-        OnClick onClick = new OnClick();
-        mBtnback.setOnClickListener(onClick);
-        mBtncpd.setOnClickListener(onClick);
-    }
-
-    private void showMessage(String message) {
-        Toast.makeText(ChangePawdActivity.this, message, Toast.LENGTH_SHORT).show();
-    }
-
-    private boolean changePassword(String phone, String newPassword) {
+    private boolean changeName(String phone, String newname) {
         boolean flag = false;
         Connection conn = JdbcUtil.conn();  // 建立与数据库的连接
         if (!JdbcUtil.isExistUSER(conn, phone)) {
             Log.e("Connect-MySQL", "账号不存在，请先进行注册！");
             // 这里开启了一个新进程，Toast调用法法师需要用到Looper的prepare进行准备
             Looper.prepare();
-            Toast.makeText(ChangePawdActivity.this, "账号不存在，请先进行注册！", Toast.LENGTH_SHORT).show();
+            Toast.makeText(ChangeInfoActivity.this, "账号不存在，请先进行注册！", Toast.LENGTH_SHORT).show();
             Looper.loop();
         } else {
-            newPassword = MD5Utils.Encrypt(newPassword);
-            JdbcUtil.updatepassword(conn, phone, newPassword);
+            JdbcUtil.updatename(conn, phone, newname);
             flag = true;
         }
         JdbcUtil.close(conn);
         return flag;
+    }
+
+    public static void getData(String phone) {
+        ChangeInfoActivity.phone = phone;
     }
 
     private class OnClick implements View.OnClickListener {
@@ -73,31 +61,26 @@ public class ChangePawdActivity extends AppCompatActivity implements Init {
         @Override
         public void onClick(View v) {
             switch (v.getId()) {
-                case R.id.btn_change_back:
-                    ChangePawdActivity.this.finish();
+                case R.id.btn_change_back1:
+                    ChangeInfoActivity.this.finish();
                     break;
-                case R.id.btn_change_cpd:
-                    String pd = password.getText().toString();
-                    String repd = repet_password.getText().toString();
-                    if (pd.isEmpty()) {
-                        showMessage("请输入密码");
-                    } else if (repd.isEmpty()) {
-                        showMessage("请再次输入密码");
-                    } else if (!pd.equals(repd)) {
-                        showMessage("两次输入密码不正确，请重新输入！");
+                case R.id.btn_change_info:
+                    String name = newname.getText().toString();
+                    if (name.isEmpty()) {
+                        showMessage("请输入信息");
                     } else {
                         new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                if (changePassword(ChangePawdActivity.phone, pd)) {
+                                if (changeName(ChangeInfoActivity.phone, name)) {
                                     Looper.prepare();
-                                    Toast.makeText(ChangePawdActivity.this, "信息修改成功", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(ChangeInfoActivity.this, "信息修改成功", Toast.LENGTH_SHORT).show();
                                     Looper.loop();
                                 }
                             }
                         }).start();
                         Intent intent = new Intent();
-                        intent.setClass(ChangePawdActivity.this, LoginActivity.class);
+                        intent.setClass(ChangeInfoActivity.this, LoginActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                         startActivity(intent);
                     }
@@ -107,11 +90,20 @@ public class ChangePawdActivity extends AppCompatActivity implements Init {
         }
     }
 
+    private void showMessage(String message) {
+        Toast.makeText(ChangeInfoActivity.this, message, Toast.LENGTH_SHORT).show();
+    }
+
     @Override
     public void initViews() {
-        mBtnback = (Button) findViewById(R.id.btn_change_back);
-        mBtncpd = (Button) findViewById(R.id.btn_change_cpd);
-        password = (EditText) findViewById(R.id.edit_change_pawd);
-        repet_password = (EditText) findViewById(R.id.edit_change_repete);
+        mBtnback = (Button) findViewById(R.id.btn_change_back1);
+        mBtncpd = (Button) findViewById(R.id.btn_change_info);
+        newname = (EditText) findViewById(R.id.edit_change_name);
+    }
+
+    private void setListeners() {
+        OnClick onClick = new OnClick();
+        mBtnback.setOnClickListener(onClick);
+        mBtncpd.setOnClickListener(onClick);
     }
 }

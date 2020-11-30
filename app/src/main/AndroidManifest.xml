@@ -21,7 +21,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".home.HomeActivity"></activity>
+        <activity android:name=".chat.ChatActivity"></activity>
+        <activity android:name=".home.SearchGroupActivity" />
+        <activity android:name=".home.ChangePersonActivity" />
+        <activity android:name=".home.PersonActivity" />
+        <activity android:name=".home.MenuActivity" />
+        <activity android:name=".home.CreateGroupActivity" />
+        <activity android:name=".forgetpasswd.ChoseActivity" />
+        <activity android:name=".forgetpasswd.ChangeInfoActivity" />
+        <activity android:name=".home.HomeActivity" />
         <activity android:name=".forgetpasswd.ChangePawdActivity" />
         <activity android:name=".register.VerifyActivity" />
         <activity android:name=".LoginActivity" />

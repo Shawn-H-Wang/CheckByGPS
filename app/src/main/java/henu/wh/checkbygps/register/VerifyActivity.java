@@ -243,10 +243,9 @@ public class VerifyActivity extends AppCompatActivity implements Init {
         Connection conn = JdbcUtil.conn();
         // 查询该账户是否被注册
         if (JdbcUtil.selectPhone(conn, userphone)) { // 返回为true说明未被注册，则可以注册，将注册信息传入方法中
-            JdbcUtil.insert(conn, userphone, username, password, sex, identify);
+            JdbcUtil.insertUSER(conn, userphone, username, password, sex, identify);
             flag = true;
             VerifyActivity.FLAG = true;
-
         } else {
             // 这里开启了一个新进程，Toast调用法法师需要用到Looper的prepare进行准备
             Looper.prepare();

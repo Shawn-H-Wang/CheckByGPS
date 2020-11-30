@@ -1,36 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background_img"
     android:orientation="vertical">
 
-
     <LinearLayout
+        android:id="@+id/ll_search"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <Button
-            android:id="@+id/search_view"
-            android:layout_width="370dp"
+        <EditText
+            android:id="@+id/search_group"
+            android:layout_width="320dp"
             android:layout_height="wrap_content"
-            android:text="查找群"
-            android:queryHint="请输入搜索内容" />
+            android:hint="请输入查找的群聊信息" />
 
-        <ImageView
-            android:id="@+id/img_plus_group"
+        <Button
+            android:id="@+id/search"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/plus" />
+            android:text="搜索" />
 
     </LinearLayout>
 
-    <ExpandableListView
-        android:id="@+id/expend_list"
+    <ListView
+        android:id="@+id/searchgroup_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ll_search"></ListView>
 
-    </ExpandableListView>
-
-</LinearLayout>
+</RelativeLayout>

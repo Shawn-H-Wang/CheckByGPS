@@ -57,7 +57,7 @@ public class ForgetPasswordActivity extends AppCompatActivity implements Init {
             if (result == SMSSDK.RESULT_COMPLETE) { //回调完成
                 if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {//提交验证码成功
                     Log.d("SMSSDK", "验证码输入正确");
-                    startActivity(new Intent(ForgetPasswordActivity.this, ChangePawdActivity.class));
+                    startActivity(new Intent(ForgetPasswordActivity.this, ChoseActivity.class));
                 }
             } else {    //回调失败
                 if (flag) {
@@ -126,6 +126,7 @@ public class ForgetPasswordActivity extends AppCompatActivity implements Init {
                             showMessage("请输入正确的手机号！");
                         } else {
                             ChangePawdActivity.getData(phone);
+                            ChangeInfoActivity.getData(phone);
                             SMSSDK.getVerificationCode("86", phone);   // 获取你的手机号的验证码
                             verifycode.requestFocus();  //判断是否获得焦点
                         }

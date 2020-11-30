@@ -1,5 +1,9 @@
 package henu.wh.checkbygps.help;
 
+import android.annotation.SuppressLint;
+import android.icu.text.SimpleDateFormat;
+
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -7,6 +11,7 @@ public class Helper {
 
     /**
      * <p>正则表达式验证phone是否正确</p>
+     *
      * @param phone
      * @return
      */
@@ -16,5 +21,18 @@ public class Helper {
         Matcher matcher = pattern.matcher(phone);
         return matcher.matches();
     }
+
+    @SuppressLint("DefaultLocale")
+    public static String Entrycode(int count) {
+        String gid = "g";
+        gid += String.format("%9d", count);
+        return gid;
+    }
+
+    public static String randomGID() {
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");//设置日期格式
+        return df.format(new Date());
+    }
+
 
 }

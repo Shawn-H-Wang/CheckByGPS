@@ -3,7 +3,12 @@ package henu.wh.checkbygps.dbHelper;
 import android.util.Log;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
+import henu.wh.checkbygps.chat.PersonChat;
+import henu.wh.checkbygps.help.MD5Utils;
+import henu.wh.checkbygps.role.Group;
 import henu.wh.checkbygps.role.User;
 
 /**
@@ -13,7 +18,7 @@ import henu.wh.checkbygps.role.User;
 public class JdbcUtil {
 
     private static final String TAG = "Connect-MySQL";
-    private static final String IP = "10.0.2.2";
+    private static final String IP = "47.100.139.81";
     private static final String DBNAME = "AUDB";
     private static final String USER = "root";
     private static final String PASSWORD = "12345678";
@@ -86,7 +91,7 @@ public class JdbcUtil {
         return flag;
     }
 
-    public static boolean isExist(Connection conn, String userphone) {
+    public static boolean isExistUSER(Connection conn, String userphone) {
         boolean flag = false;
         String sql = "SELECT phone FROM USER WHERE phone='" + userphone + "'";
         try {
@@ -106,10 +111,11 @@ public class JdbcUtil {
         return flag;
     }
 
-    public static void insert(Connection conn, String userphone, String username, String password, boolean sex, boolean identify) {
-        String sql = "INSERT INTO USER VALUES(?,?,?,?,?)";
+    public static void insertUSER(Connection conn, String userphone, String username, String password, boolean sex, boolean identify) {
+        String sql = "INSERT INTO `USER` VALUES(?,?,?,?,?)";
         try {
             if (conn != null) { // conn不为null表明数据库建立成功
+                password = MD5Utils.Encrypt(password);
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ps.setString(1, userphone);
                 ps.setString(2, username);
@@ -123,7 +129,134 @@ public class JdbcUtil {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
 
+    public static void insertGroup(Connection conn, String groupid, String groupname, String groupowner) {
+        String sql = "INSERT INTO `group` VALUES(?,?,?)";
+        try {
+            if (conn != null) { // conn不为null表明数据库建立成功
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setString(1, groupid);
+                ps.setString(2, groupname);
+                ps.setString(3, groupowner);
+                ps.executeUpdate();
+                Log.d(TAG, "数据插入成功|插入数据为{" + groupid + "," + groupname + "," + groupowner + "}");
+                ps.close();
+                addIntoGroup(conn, groupid, groupowner);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void addIntoGroup(Connection conn, String groupid, String groupowner) {
+        String sql = "INSERT INTO groupmember VALUES(?,?)";
+        try {
+            if (conn != null) { // conn不为null表明数据库建立成功
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setString(1, groupid);
+                ps.setString(2, groupowner);
+                ps.executeUpdate();
+                Log.d(TAG, "数据插入成功|插入数据为{" + groupid + "," + groupowner + "}");
+                ps.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void selectManageGroup(Connection conn, User user) {
+        List<String> list = new ArrayList<String>();
+        String userphone = user.getPhone();
+        String sql = "SELECT * FROM `group` WHERE groupowner='" + userphone + "'";
+        try {
+            if (conn != null) { // conn不为null表明数据库建立成功
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql);
+                while (rs.next()) {
+                    String s1 = rs.getString("groupname");
+//                    System.out.println(s1);
+                    list.add(s1);
+                }
+//                System.out.println(list);
+                stmt.close();
+            }
+        } catch (SQLException e) {
+            Log.e(TAG, "查询无果");
+            return;
+        }
+        if (list.size() <= 0) {
+            return;
+        }
+        user.setManagegroup(list);
+    }
+
+    public static void selectInGroup(Connection conn, User user, List<Group> glist) {
+        List<String> list = new ArrayList<String>();
+        glist.clear();
+        String userphone = user.getPhone();
+        String sql = "select * from `group` where groupid in (select groupid from groupmember where groupmember.memberid = '" + userphone + "');";
+        try {
+            if (conn != null) { // conn不为null表明数据库建立成功
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql);
+                while (rs.next()) {
+                    String s1 = rs.getString("groupname");
+                    glist.add(new Group(rs.getString("groupid"), rs.getString("groupname"), rs.getString("groupowner")));
+//                    System.out.println(s1);
+                    list.add(s1);
+                }
+//                System.out.println(list);
+                stmt.close();
+            }
+        } catch (SQLException e) {
+            Log.e(TAG, "查询无果");
+            return;
+        }
+        if (list.size() <= 0) {
+            return;
+        }
+        user.setIngroup(list);
+    }
+
+    public static void selectGroup(Connection conn, String message, List<Group> Glist) {
+        String sql = "select * from `group` where groupid = '" + message + "' or groupname like '%" + message + "%'";
+        Glist.clear();
+        try {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql);
+                while (rs.next()) {
+                    Glist.add(new Group(rs.getString("groupid"), rs.getString("groupname"), rs.getString("groupowner")));
+                }
+                Log.d(TAG, "Group message: " + Glist.toString());
+                stmt.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void selectMessage(Connection conn, User user, String gid, List<PersonChat> plist) {
+        String sql = "select * from messge where groupid='"+gid+"' order by mdate";
+        plist.clear();
+        try {
+            if (conn != null) {
+                Statement stmt = conn.createStatement();
+                ResultSet rs = stmt.executeQuery(sql);
+                while (rs.next()) {
+                    String mid = rs.getString("memberid");
+                    plist.add(new PersonChat(
+                            rs.getString("groupid"),
+                            rs.getString("memberid"),
+                            rs.getString("message"),
+                            user.getPhone().equals(mid)));
+                }
+                stmt.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -141,7 +274,7 @@ public class JdbcUtil {
                 ps.setString(1, password);
                 ps.setString(2, phone);
                 ps.executeUpdate();
-                Log.d(TAG, "密码修改成功|" + "修改用户密码信息为：{" + password + "," + phone + "}");
+                Log.d(TAG, "密码修改成功");
                 ps.close();
             }
         } catch (SQLException e) {
@@ -149,22 +282,16 @@ public class JdbcUtil {
         }
     }
 
-    public static void selectClass(Connection conn, String phone, String clas, String table) {
-        String sql = "SELECT class FROM " + table + " WHERE phone='" + phone + "'";
+    public static void updatename(Connection conn, String phone, String name) {
+        String sql = "update USER set user = ? where phone = ?";
         try {
             if (conn != null) {
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(sql);
-                if (rs.next()) {
-                    Log.d(TAG, "用户存在，查找成功！");
-                    String c = rs.getString("class");
-                    if (!c.isEmpty()) {
-                        clas = "班级：" + c;
-                    } else {
-                        clas = "班级：尚未绑定班级";
-                    }
-                }
-                stmt.close();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setString(1, name);
+                ps.setString(2, phone);
+                ps.executeUpdate();
+                Log.d(TAG, "密码修改成功");
+                ps.close();
             }
         } catch (SQLException e) {
             e.printStackTrace();

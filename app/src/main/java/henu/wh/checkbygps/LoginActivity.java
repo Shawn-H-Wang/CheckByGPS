@@ -11,12 +11,20 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.sql.Connection;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
+import henu.wh.checkbygps.client.Client;
 import henu.wh.checkbygps.dbHelper.JdbcUtil;
 import henu.wh.checkbygps.forgetpasswd.ForgetPasswordActivity;
 import henu.wh.checkbygps.help.Init;
+import henu.wh.checkbygps.help.MD5Utils;
 import henu.wh.checkbygps.home.HomeActivity;
+import henu.wh.checkbygps.home.MenuActivity;
+import henu.wh.checkbygps.role.Group;
 import henu.wh.checkbygps.role.User;
 
 public class LoginActivity extends AppCompatActivity implements Init {
@@ -27,6 +35,9 @@ public class LoginActivity extends AppCompatActivity implements Init {
 
     public volatile static boolean FLAG = false;
     public volatile static User user = new User();
+    public volatile static List<Group> list = new ArrayList<>();
+    public volatile static String[][] childString = new String[2][];
+    public volatile static Client client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,13 +75,35 @@ public class LoginActivity extends AppCompatActivity implements Init {
                             e.printStackTrace();
                         }
                         if (LoginActivity.FLAG) {
-                            HomeActivity.setUser(LoginActivity.user);
-                            eTuser.setText("");
-                            eTpassword.setText("");
-                            Intent intent = new Intent();
-                            intent.setClass(LoginActivity.this, HomeActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            startActivity(intent);    // 如果登陆成功，跳转至主界面
+                            setChildString();
+                            MenuActivity.setUser(user);
+                            MenuActivity.setChildString(childString);
+                            MenuActivity.setGroupList(list);
+                            new Thread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        LoginActivity.client = new Client();
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                        LoginActivity.FLAG = false;
+                                        Looper.prepare();
+                                        Toast.makeText(LoginActivity.this, "服务器异常，请稍后重试！", Toast.LENGTH_SHORT).show();
+                                        Looper.loop();
+                                    }
+                                }
+                            }).start();
+                            try {
+                                Thread.sleep(500);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            if (LoginActivity.FLAG) {
+                                eTuser.setText("");
+                                eTpassword.setText("");
+                                Intent intent = new Intent(LoginActivity.this, MenuActivity.class);
+                                startActivity(intent);    // 如果登陆成功，跳转至主界面
+                            }
                         }
                     }
                     break;
@@ -102,7 +135,8 @@ public class LoginActivity extends AppCompatActivity implements Init {
     private boolean isRight(User user, String username, String password) {
         boolean flag = false;
         Connection conn = JdbcUtil.conn();
-        if (JdbcUtil.isExist(conn, username)) {
+        if (JdbcUtil.isExistUSER(conn, username)) {
+            password = MD5Utils.Encrypt(password);
             if (JdbcUtil.selectPassword(conn, user, username, password)) {
                 flag = true;    // 表示匹配成功
             } else {
@@ -125,11 +159,45 @@ public class LoginActivity extends AppCompatActivity implements Init {
             public synchronized void run() {
                 if (isRight(user, userphone, password)) {
                     LoginActivity.FLAG = true;
-                    Looper.prepare();
-                    Toast.makeText(LoginActivity.this, "登陆成功！", Toast.LENGTH_SHORT).show();
-                    Looper.loop();
                 }
             }
         }).start();
+    }
+
+    public void setChildString() {
+        new Thread(new Runnable() {
+            @Override
+            public synchronized void run() {
+                Connection conn = JdbcUtil.conn();
+                JdbcUtil.selectManageGroup(conn, user);
+                JdbcUtil.selectInGroup(conn, user, list);
+                System.out.println(list.toString());
+//                System.out.println(Arrays.deepToString(childString));
+                JdbcUtil.close(conn);
+            }
+        }).start();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(user.getManagegroup());
+        System.out.println(user.getIngroup());
+        List<String> list = user.getManagegroup();
+        if (list.size() <= 0) {
+            childString[0] = null;
+        }
+        childString[0] = new String[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            childString[0][i] = list.get(i);
+        }
+        list = user.getIngroup();
+        if (list.size() <= 0) {
+            childString[1] = null;
+        }
+        childString[1] = new String[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            childString[1][i] = list.get(i);
+        }
     }
 }

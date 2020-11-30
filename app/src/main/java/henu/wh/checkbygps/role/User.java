@@ -1,5 +1,8 @@
 package henu.wh.checkbygps.role;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class User {
 
     private String phone;
@@ -7,6 +10,8 @@ public class User {
     private String password;
     private boolean sex;
     private boolean identify;
+    private List<String> managegroup = new ArrayList<String>();
+    private List<String> ingroup = new ArrayList<String>();
 
     public User() {
     }
@@ -17,6 +22,27 @@ public class User {
         this.password = password;
         this.sex = sex;
         this.identify = identify;
+    }
+
+    public void set(List<String> managegroup, List<String> ingroup) {
+        this.managegroup = managegroup;
+        this.ingroup = ingroup;
+    }
+
+    public List<String> getManagegroup() {
+        return managegroup;
+    }
+
+    public void setManagegroup(List<String> managegroup) {
+        this.managegroup = managegroup;
+    }
+
+    public List<String> getIngroup() {
+        return ingroup;
+    }
+
+    public void setIngroup(List<String> ingroup) {
+        this.ingroup = ingroup;
     }
 
     public String getPhone() {
