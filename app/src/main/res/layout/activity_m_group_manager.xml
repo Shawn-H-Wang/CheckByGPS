@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background_img"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="300dp">
+
+        <TextView
+            android:id="@+id/mgname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="@color/smssdk_black"
+            android:textSize="30sp" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/deleteG"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="删除群" />
+
+    <Button
+        android:id="@+id/memMG"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="查看群成员" />
+
+    <Button
+        android:id="@+id/signInfoMG"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="查看签到记录" />
+
+    <Button
+        android:id="@+id/signMG"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="发起签到" />
+
+    <Button
+        android:id="@+id/backMG"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="返回" />
+
+
+</LinearLayout>

@@ -50,4 +50,13 @@ public class PersonChat {
     public void setMeSend(boolean meSend) {
         isMeSend = meSend;
     }
+
+    @Override
+    public String toString() {
+        return "PersonChat{" +
+                "phone='" + phone + '\'' +
+                ", gid='" + gid + '\'' +
+                ", chatMessage='" + chatMessage + '\'' +
+                '}';
+    }
 }

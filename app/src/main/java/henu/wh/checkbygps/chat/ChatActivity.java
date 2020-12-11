@@ -2,6 +2,7 @@ package henu.wh.checkbygps.chat;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -12,10 +13,13 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
+import henu.wh.checkbygps.LoginActivity;
 import henu.wh.checkbygps.R;
+import henu.wh.checkbygps.dbHelper.JdbcUtil;
 import henu.wh.checkbygps.role.Group;
 
 public class ChatActivity extends AppCompatActivity {
@@ -23,7 +27,7 @@ public class ChatActivity extends AppCompatActivity {
     private ChatAdapter chatAdapter;
     private ListView lv_chat_dialog;
     private TextView tv_gname;
-    private static List<PersonChat> personChats = new ArrayList<PersonChat>();
+    private volatile static List<PersonChat> personChats = new ArrayList<PersonChat>();
     private static Group group = new Group();
 
 
@@ -67,7 +71,8 @@ public class ChatActivity extends AppCompatActivity {
             @Override
             public void onClick(View arg0) {
                 // TODO Auto-generated method stub
-                if (TextUtils.isEmpty(et_chat_message.getText().toString())) {
+                String s = et_chat_message.getText().toString();
+                if (TextUtils.isEmpty(s)) {
                     Toast.makeText(ChatActivity.this, "发送内容不能为空", Toast.LENGTH_SHORT).show();
                     return;
                 }
@@ -75,7 +80,17 @@ public class ChatActivity extends AppCompatActivity {
                 //代表自己发送
                 personChat.setMeSend(true);
                 //得到发送内容
-                personChat.setChatMessage(et_chat_message.getText().toString());
+                personChat.setChatMessage(s);
+                personChat.setPhone(LoginActivity.user.getPhone());
+                new Thread(new Runnable() {
+                    @SuppressLint("NewApi")
+                    @Override
+                    public void run() {
+                        Connection conn = JdbcUtil.conn();
+                        JdbcUtil.insertMessage(conn, group.getGid(), personChat);
+                        JdbcUtil.close(conn);
+                    }
+                }).start();
                 //加入集合
                 personChats.add(personChat);
                 //清空输入框

@@ -1,21 +1,21 @@
 package henu.wh.checkbygps.home;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.TextView;
-
 import henu.wh.checkbygps.R;
 
 public class MyExtendableListViewAdapter extends BaseExpandableListAdapter {
-    private Context mcontext;
     public String[] groupString = {"我发起的签到群", "我加入的签到群"};
-    public volatile String[][] childString;
+    public String[][] childString;
 
     public MyExtendableListViewAdapter(String[][] childString) {
         this.childString = childString;
+        for (String[] strings : this.childString) {
+            System.out.println(strings);
+        }
     }
 
     @Override
@@ -27,9 +27,6 @@ public class MyExtendableListViewAdapter extends BaseExpandableListAdapter {
     //获取指定分组中的子选项的个数
     @Override
     public int getChildrenCount(int groupPosition) {
-        if (childString == null) {
-            return 0;
-        }
         return childString[groupPosition].length;
     }
 
@@ -42,9 +39,6 @@ public class MyExtendableListViewAdapter extends BaseExpandableListAdapter {
     //获取指定分组中的指定子选项数据
     @Override
     public Object getChild(int groupPosition, int childPosition) {
-        if (childString == null) {
-            childString[groupPosition][childPosition] = "";
-        }
         return childString[groupPosition][childPosition];
     }
 
@@ -100,7 +94,6 @@ public class MyExtendableListViewAdapter extends BaseExpandableListAdapter {
      * @param convertView   重用已有的视图(View)对象
      * @param parent        返回的视图(View)对象始终依附于的视图组
      * @return View
-     *
      */
 
     //取得显示给定分组给定子位置的数据用的视图
@@ -123,7 +116,6 @@ public class MyExtendableListViewAdapter extends BaseExpandableListAdapter {
     //指定位置上的子元素是否可选中
     @Override
     public boolean isChildSelectable(int groupPosition, int childPosition) {
-
         return true;
     }
 
@@ -133,6 +125,5 @@ public class MyExtendableListViewAdapter extends BaseExpandableListAdapter {
 
     static class ChildViewHolder {
         TextView tvTitle;
-
     }
 }

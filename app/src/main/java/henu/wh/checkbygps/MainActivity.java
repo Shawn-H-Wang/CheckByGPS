@@ -6,7 +6,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
+import java.io.IOException;
+import java.net.Socket;
+
+import henu.wh.checkbygps.client.Client;
 import henu.wh.checkbygps.help.Init;
 import henu.wh.checkbygps.register.RegisterActivity;
 
@@ -20,8 +25,14 @@ public class MainActivity extends AppCompatActivity implements Init {
         setContentView(R.layout.activity_main);
 
         initViews();
-
         setListeners();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Client.getClient();
+            }
+        }).start();
+
     }
 
     private void setListeners() {

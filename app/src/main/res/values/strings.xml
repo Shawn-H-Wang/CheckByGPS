@@ -1,3 +1,13 @@
 <resources>
     <string name="app_name">河南大学Android定位考勤系统</string>
+    <string name="app_message">信息</string>
+    <string name="app_search_group">查找群</string>
+    <string name="app_persion">个人信息</string>
+    <string name="app_menu">菜单</string>
+    <string name="app_login">登陆</string>
+    <string name="app_register">注册</string>
+    <string name="app_groupmanager">管理群</string>
+    <string name="app_forget_password">忘记密码</string>
+    <string name="app_change_info">修改信息</string>
+    <string name="app_create_group">创建群聊</string>
 </resources>

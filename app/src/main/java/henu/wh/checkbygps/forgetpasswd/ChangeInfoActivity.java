@@ -17,7 +17,6 @@ import henu.wh.checkbygps.LoginActivity;
 import henu.wh.checkbygps.R;
 import henu.wh.checkbygps.dbHelper.JdbcUtil;
 import henu.wh.checkbygps.help.Init;
-import henu.wh.checkbygps.help.MD5Utils;
 
 public class ChangeInfoActivity extends AppCompatActivity implements Init {
 
@@ -28,6 +27,7 @@ public class ChangeInfoActivity extends AppCompatActivity implements Init {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTitle(getResources().getText(R.string.app_change_info));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_info);
 

@@ -8,6 +8,7 @@ public class User {
     private String phone;
     private String name;
     private String password;
+    private String opeartion;
     private boolean sex;
     private boolean identify;
     private List<String> managegroup = new ArrayList<String>();
@@ -83,5 +84,13 @@ public class User {
 
     public void setIdentify(boolean identify) {
         this.identify = identify;
+    }
+
+    public String getOpeartion() {
+        return opeartion;
+    }
+
+    public void setOpeartion(String opeartion) {
+        this.opeartion = opeartion;
     }
 }

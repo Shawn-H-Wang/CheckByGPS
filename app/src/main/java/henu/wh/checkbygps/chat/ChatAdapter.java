@@ -13,7 +13,7 @@ import henu.wh.checkbygps.R;
 public class ChatAdapter extends BaseAdapter {
 
     private Context context;
-    private List<PersonChat> lists;
+    private volatile List<PersonChat> lists;
 
     public ChatAdapter(Context context, List<PersonChat> lists) {
         super();

@@ -2,6 +2,9 @@ package henu.wh.checkbygps.help;
 
 import android.annotation.SuppressLint;
 import android.icu.text.SimpleDateFormat;
+import android.os.Build;
+
+import androidx.annotation.RequiresApi;
 
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -29,6 +32,7 @@ public class Helper {
         return gid;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.N)
     public static String randomGID() {
         SimpleDateFormat df = new SimpleDateFormat("yyyyMMddHHmmss");//设置日期格式
         return df.format(new Date());

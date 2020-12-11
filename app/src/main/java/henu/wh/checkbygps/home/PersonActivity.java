@@ -10,10 +10,15 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
+
 import java.io.IOException;
 
 import henu.wh.checkbygps.LoginActivity;
+import henu.wh.checkbygps.MainActivity;
 import henu.wh.checkbygps.R;
+import henu.wh.checkbygps.client.Client;
 import henu.wh.checkbygps.role.User;
 
 public class PersonActivity extends AppCompatActivity {
@@ -21,15 +26,12 @@ public class PersonActivity extends AppCompatActivity {
     private TextView phone, name, sex;
     private Button back, exit, change;
 
-    public static User user1;
-
-    public static void setUser(User user) {
-        PersonActivity.user1 = user;
-    }
+    public volatile static JSONObject jsonObject = new JSONObject();
 
     @SuppressLint("SetTextI18n")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTitle(getResources().getText(R.string.app_persion));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_person);
 
@@ -40,15 +42,16 @@ public class PersonActivity extends AppCompatActivity {
         exit = (Button) findViewById(R.id.person_exit);
         change = (Button) findViewById(R.id.person_change);
 
-        phone.setText("账号：" + user1.getPhone());
-        name.setText("姓名：" + user1.getName());
-        String s = user1.isSex() ? "男性" : "女性";
-        sex.setText("性别：" + s);
+        getMSG();
+
+        phone.setText("账号：" + jsonObject.getString("phone"));
+        name.setText("姓名：" + jsonObject.getString("name"));
+//        String s = jsonObject.getBoolean("sex") ? "男性" : "女性";
+//        sex.setText("性别：" + s);
 
         back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MenuActivity.setUser(PersonActivity.user1);
                 finish();
             }
         });
@@ -60,7 +63,7 @@ public class PersonActivity extends AppCompatActivity {
                 intent.setClass(PersonActivity.this, LoginActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 try {
-                    LoginActivity.client.close();
+                    Client.getClient().close();
                     startActivity(intent);
                     Toast.makeText(PersonActivity.this, "退出成功！！", Toast.LENGTH_LONG).show();
                 } catch (IOException e) {
@@ -78,12 +81,41 @@ public class PersonActivity extends AppCompatActivity {
         });
     }
 
+    public void getMSG() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("want", "info");
+                Client.getClient().send(jsonObject);
+            }
+        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String s = Client.getClient().read();
+                try {
+                    jsonObject = JSONObject.parseObject(s);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    jsonObject = new JSONObject();
+                }
+            }
+        }).start();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        phone.setText("账号：" + user1.getPhone());
-        name.setText("姓名：" + user1.getName());
-        String s = user1.isSex() ? "男性" : "女性";
+        getMSG();
+        phone.setText("账号：" + jsonObject.getString("phone"));
+        name.setText("姓名：" + jsonObject.getString("name"));
+        String s = jsonObject.getBoolean("sex") ? "男性" : "女性";
         sex.setText("性别：" + s);
     }
 }

@@ -1,15 +1,19 @@
 package henu.wh.checkbygps.dbHelper;
 
+import android.os.Build;
 import android.util.Log;
+
+import androidx.annotation.RequiresApi;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import henu.wh.checkbygps.chat.PersonChat;
-import henu.wh.checkbygps.help.MD5Utils;
 import henu.wh.checkbygps.role.Group;
 import henu.wh.checkbygps.role.User;
+
+import static henu.wh.checkbygps.help.Helper.randomGID;
 
 /**
  * 这里新建了一个类，将访问mysql的方法封装在类中（以下称数据库工具类）
@@ -115,7 +119,6 @@ public class JdbcUtil {
         String sql = "INSERT INTO `USER` VALUES(?,?,?,?,?)";
         try {
             if (conn != null) { // conn不为null表明数据库建立成功
-                password = MD5Utils.Encrypt(password);
                 PreparedStatement ps = conn.prepareStatement(sql);
                 ps.setString(1, userphone);
                 ps.setString(2, username);
@@ -147,6 +150,27 @@ public class JdbcUtil {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public static void insertMessage(Connection conn, String groupid, PersonChat personChat) {
+        String sql = "INSERT INTO `messge` VALUES(?,?,?,?)";
+        try {
+            if (conn != null) { // conn不为null表明数据库建立成功
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ps.setString(1, groupid);
+                ps.setString(2, personChat.getPhone());
+                ps.setString(3, personChat.getChatMessage());
+                String date = randomGID();
+                ps.setString(4, date);
+                ps.executeUpdate();
+                Log.d(TAG, "数据插入成功|插入数据为{" + personChat.toString() + "," + date+ "}");
+                ps.close();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
     }
 
     public static void addIntoGroup(Connection conn, String groupid, String groupowner) {
@@ -238,8 +262,9 @@ public class JdbcUtil {
     }
 
     public static void selectMessage(Connection conn, User user, String gid, List<PersonChat> plist) {
-        String sql = "select * from messge where groupid='"+gid+"' order by mdate";
-        plist.clear();
+        System.out.println(user.toString());
+        System.out.println(gid);
+        String sql = "select * from `messge` where groupid='" + gid + "'";
         try {
             if (conn != null) {
                 Statement stmt = conn.createStatement();
@@ -252,6 +277,7 @@ public class JdbcUtil {
                             rs.getString("message"),
                             user.getPhone().equals(mid)));
                 }
+                Log.d(TAG, "查询信息为：" + plist.toString());
                 stmt.close();
             }
         } catch (SQLException e) {

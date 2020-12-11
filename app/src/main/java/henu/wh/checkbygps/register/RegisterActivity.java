@@ -12,20 +12,31 @@ import android.widget.Toast;
 
 import henu.wh.checkbygps.R;
 import henu.wh.checkbygps.help.Init;
+import henu.wh.checkbygps.role.User;
 
 public class RegisterActivity extends AppCompatActivity implements Init {
 
     private Button mBtnback, mBtnnext;
     private EditText eTuser, eTpasswd, eTpdagain;
     private RadioButton rBtnmale, rBtnfemale, rBtnstudent, rBtnteacher;
+    public volatile static boolean iSfinish = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTitle(getResources().getText(R.string.app_register));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
         initViews();
         setListeners();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (iSfinish) {
+            finish();
+        }
     }
 
     private void setListeners() {
@@ -80,7 +91,13 @@ public class RegisterActivity extends AppCompatActivity implements Init {
             showMessage("两次输入密码不一致，请重新输入");
             eTpdagain.requestFocus();
         } else {
-            VerifyActivity.getData(username, userpasswd, sex, identify);
+            User user = new User();
+            user.setName(username);
+            user.setPassword(userpasswd);
+            user.setSex(sex);
+            user.setIdentify(identify);
+            user.setOpeartion("register");
+            VerifyActivity.getUser(user);
             tag = true;
         }
         return tag;

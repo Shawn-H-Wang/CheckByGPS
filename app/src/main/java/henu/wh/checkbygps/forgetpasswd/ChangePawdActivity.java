@@ -14,11 +14,9 @@ import android.widget.Toast;
 import java.sql.Connection;
 
 import henu.wh.checkbygps.LoginActivity;
-import henu.wh.checkbygps.MainActivity;
 import henu.wh.checkbygps.R;
 import henu.wh.checkbygps.dbHelper.JdbcUtil;
 import henu.wh.checkbygps.help.Init;
-import henu.wh.checkbygps.help.MD5Utils;
 
 public class ChangePawdActivity extends AppCompatActivity implements Init {
 
@@ -29,6 +27,7 @@ public class ChangePawdActivity extends AppCompatActivity implements Init {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTitle(getResources().getText(R.string.app_forget_password));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_change_pawd);
 
@@ -60,7 +59,6 @@ public class ChangePawdActivity extends AppCompatActivity implements Init {
             Toast.makeText(ChangePawdActivity.this, "账号不存在，请先进行注册！", Toast.LENGTH_SHORT).show();
             Looper.loop();
         } else {
-            newPassword = MD5Utils.Encrypt(newPassword);
             JdbcUtil.updatepassword(conn, phone, newPassword);
             flag = true;
         }

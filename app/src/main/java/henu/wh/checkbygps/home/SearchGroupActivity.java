@@ -21,20 +21,16 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.sql.Connection;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import henu.wh.checkbygps.LoginActivity;
 import henu.wh.checkbygps.R;
-import henu.wh.checkbygps.client.SendMessage;
-import henu.wh.checkbygps.dbHelper.JdbcUtil;
+import henu.wh.checkbygps.client.Client;
 import henu.wh.checkbygps.role.Group;
 
 public class SearchGroupActivity extends AppCompatActivity {
@@ -44,9 +40,12 @@ public class SearchGroupActivity extends AppCompatActivity {
     private ListView Glist;
 
     private volatile static List<Group> glist = new ArrayList<>();
+    private volatile int addG = -100;
+    public volatile static JSONObject jsonObject;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTitle(getResources().getText(R.string.app_search_group));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search_group);
         search = (Button) findViewById(R.id.search);
@@ -57,26 +56,39 @@ public class SearchGroupActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 searchGroup.clearFocus();
+                if (searchGroup.getText().toString().isEmpty()) {
+                    Toast.makeText(SearchGroupActivity.this, "请输入需要查找的内容！！", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
                         String searchmessage = searchGroup.getText().toString();
-                        if (searchmessage.isEmpty()) {
-                            Looper.prepare();
-                            Toast.makeText(SearchGroupActivity.this, "请输入需要查找的内容！！", Toast.LENGTH_SHORT).show();
-                            Looper.loop();
-                        } else {
-                            Connection conn = JdbcUtil.conn();
-                            JdbcUtil.selectGroup(conn, searchmessage, glist);
-                            try {
-                                Thread.sleep(500);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            JdbcUtil.close(conn);
+                        JSONObject jsonObject = new JSONObject();
+                        jsonObject.put("want", "searchG");
+                        jsonObject.put("keyword", searchmessage);
+                        Client.getClient().send(jsonObject);
+                    }
+                }).start();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String s = Client.getClient().read();
+                        try {
+                            jsonObject = JSONObject.parseObject(s);
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            jsonObject = new JSONObject();
                         }
                     }
                 }).start();
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                JSONArray ja = (JSONArray) jsonObject.get("grouplist");
+                glist = ja.toJavaList(Group.class);
                 MyListAdapter myListAdapter = new MyListAdapter(glist);
                 Glist.setAdapter(myListAdapter);
             }
@@ -93,19 +105,34 @@ public class SearchGroupActivity extends AppCompatActivity {
                                 new Thread(new Runnable() {
                                     @Override
                                     public void run() {
-                                        try {
-                                            LoginActivity.client.sendAddGroup();
-                                            Looper.prepare();
-                                            Toast.makeText(SearchGroupActivity.this, "请求已发送，请等待管理员审核进群！", Toast.LENGTH_SHORT).show();
-                                            Looper.loop();
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                            Looper.prepare();
-                                            Toast.makeText(SearchGroupActivity.this, "服务器异常，请稍后重试！", Toast.LENGTH_SHORT).show();
-                                            Looper.loop();
-                                        }
+                                        JSONObject jsonObject = new JSONObject();
+                                        jsonObject.put("operation", "addG");
+                                        jsonObject.put("userid", LoginActivity.user.getPhone());
+                                        jsonObject.put("groupid", glist.get(position).getGid());
+                                        jsonObject.put("groupowner", glist.get(position).getGroupowner());
+                                        jsonObject.put("groupname", glist.get(position).getGname());
+                                        Client.getClient().send(jsonObject);
                                     }
                                 }).start();
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        addG = Integer.parseInt(Client.getClient().read());
+                                    }
+                                }).start();
+                                try {
+                                    Thread.sleep(1000);
+                                } catch (InterruptedException e) {
+                                    e.printStackTrace();
+                                }
+                                System.out.println("addG=" + addG);
+                                if (addG == 1) {
+                                    Toast.makeText(SearchGroupActivity.this, "请求已发送，请等待管理员同意", Toast.LENGTH_SHORT).show();
+                                } else if (addG == 0) {
+                                    Toast.makeText(SearchGroupActivity.this, "你已经加入群聊，不要重复申请", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(SearchGroupActivity.this, "服务异常，请稍后重试", Toast.LENGTH_SHORT).show();
+                                }
                             }
                         }).setNegativeButton("取消", new DialogInterface.OnClickListener() {//添加取消
                             @Override

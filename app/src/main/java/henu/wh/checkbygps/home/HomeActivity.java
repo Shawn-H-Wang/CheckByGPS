@@ -2,22 +2,36 @@ package henu.wh.checkbygps.home;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
+import android.widget.Toast;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
+import henu.wh.checkbygps.LoginActivity;
 import henu.wh.checkbygps.R;
 import henu.wh.checkbygps.chat.ChatActivity;
 import henu.wh.checkbygps.chat.PersonChat;
+import henu.wh.checkbygps.client.Client;
 import henu.wh.checkbygps.dbHelper.JdbcUtil;
 import henu.wh.checkbygps.help.Init;
+import henu.wh.checkbygps.message.MessageActivity;
 import henu.wh.checkbygps.role.Group;
 import henu.wh.checkbygps.role.User;
 
@@ -26,28 +40,42 @@ public class HomeActivity extends AppCompatActivity implements Init {
     private Button searchView;
     private ImageView imageView;
 
-    public static String[][] childString1;
-    public static User user1;
-    public static List<Group> groupList = new ArrayList<>();
-    public volatile static List<PersonChat> mlist = new ArrayList<>();
+    public static String[][] childString1 = new String[2][];
 
-    public static void setUser(User user) {
-        HomeActivity.user1 = user;
-    }
-
-    public static void setChildString(String[][] childString) {
-        HomeActivity.childString1 = childString;
-    }
-
-    public static void setGroupList(List<Group> groupList) {
-        MenuActivity.groupList = groupList;
-    }
+    public volatile static JSONObject jsonObject;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTitle(getResources().getText(R.string.app_groupmanager));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         initViews();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                jsonObject = new JSONObject();
+                jsonObject.put("want", "groupInfo");
+                Client.getClient().send(jsonObject);
+            }
+        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String s = Client.getClient().read();
+                try {
+                    jsonObject = JSONObject.parseObject(s);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    jsonObject = new JSONObject();
+                }
+            }
+        }).start();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        setChildString();
         MyExtendableListViewAdapter myExtendableListViewAdapter = new MyExtendableListViewAdapter(childString1);
         ExpandableListView expandableListView = (ExpandableListView) findViewById(R.id.expend_list);
         expandableListView.setAdapter(myExtendableListViewAdapter);
@@ -62,20 +90,21 @@ public class HomeActivity extends AppCompatActivity implements Init {
         expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-//                Group group = groupList.get(childPosition);
-//                ChatActivity.setGroup(group);
-//                new Thread(new Runnable() {
-//                    @Override
-//                    public void run() {
-//                        Connection conn = JdbcUtil.conn();
-//                        JdbcUtil.selectMessage(conn, HomeActivity.user1, group.getGid(), mlist);
-//                        JdbcUtil.close(conn);
-//                    }
-//                });
-//                ChatActivity.setMList(HomeActivity.mlist);
-//                Intent intent = new Intent();
-//                intent.setClass(HomeActivity.this, ChatActivity.class);
-//                startActivity(intent);
+                // 普通群事件监听
+                String group = childString1[groupPosition][childPosition];
+                /*AlertDialog.Builder builder = new AlertDialog.Builder(HomeActivity.this);
+                builder.setTitle("群聊" + childString1[groupPosition][childPosition].substring(childString1[groupPosition][childPosition].indexOf(":")));
+                builder.setMessage("你想做什么操作？");
+                builder.setIcon(R.mipmap.ic_launcher);*/
+                if (Arrays.asList(childString1[0]).contains(group)) {
+                    MGroupManagerActivity.setGname(group);
+                    Intent intent = new Intent(HomeActivity.this, MGroupManagerActivity.class);
+                    startActivity(intent);
+                } else {
+                    IGroupManagerActivity.setGname(group);
+                    Intent intent = new Intent(HomeActivity.this, IGroupManagerActivity.class);
+                    startActivity(intent);
+                }
                 return true;
             }
         });
@@ -84,7 +113,37 @@ public class HomeActivity extends AppCompatActivity implements Init {
 
     @Override
     protected void onResume() {
+        initViews();
         super.onResume();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                jsonObject = new JSONObject();
+                jsonObject.put("want", "groupInfo");
+                Client.getClient().send(jsonObject);
+            }
+        }).start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String s = Client.getClient().read();
+                try {
+                    jsonObject = JSONObject.parseObject(s);
+                    while (jsonObject.getString("code") != null) {
+                        s = Client.getClient().read();
+                        jsonObject = JSONObject.parseObject(s);
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                    jsonObject = new JSONObject();
+                }
+            }
+        }).start();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         setChildString();
     }
 
@@ -118,39 +177,34 @@ public class HomeActivity extends AppCompatActivity implements Init {
     }
 
     public void setChildString() {
-        new Thread(new Runnable() {
-            @Override
-            public synchronized void run() {
-                Connection conn = JdbcUtil.conn();
-                JdbcUtil.selectManageGroup(conn, user1);
-                JdbcUtil.selectInGroup(conn, user1, groupList);
-                System.out.println(groupList.toString());
-//                System.out.println(Arrays.deepToString(childString));
-                JdbcUtil.close(conn);
-            }
-        }).start();
         try {
-            Thread.sleep(500);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println(user1.getManagegroup());
-        System.out.println(user1.getIngroup());
-        List<String> list = user1.getManagegroup();
-        if (list.size() <= 0) {
+        Log.d("JSON", jsonObject.toJSONString());
+        JSONArray o1 = (JSONArray) jsonObject.get("manager");
+        JSONArray o2 = (JSONArray) jsonObject.get("member");
+        List<String> list1 = o1.toJavaList(String.class);
+        List<String> list2 = o2.toJavaList(String.class);
+        Log.d("M", list1.toString());
+        if (list1.size() <= 0) {
             childString1[0] = null;
         }
-        childString1[0] = new String[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            childString1[0][i] = list.get(i);
+        childString1[0] = new String[list1.size()];
+        for (int i = 0; i < list1.size(); i++) {
+            childString1[0][i] = list1.get(i);
         }
-        list = user1.getIngroup();
-        if (list.size() <= 0) {
+        Log.d("M", list2.toString());
+        if (list2.size() <= 0) {
             childString1[1] = null;
         }
-        childString1[1] = new String[list.size()];
-        for (int i = 0; i < list.size(); i++) {
-            childString1[1][i] = list.get(i);
+        childString1[1] = new String[list2.size()];
+        for (int i = 0; i < list2.size(); i++) {
+            childString1[1][i] = list2.get(i);
+        }
+        for (String[] strings : childString1) {
+            System.out.println(strings);
         }
     }
 }

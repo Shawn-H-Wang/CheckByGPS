@@ -19,6 +19,7 @@ public class ChoseActivity extends AppCompatActivity implements Init {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTitle(getResources().getText(R.string.app_forget_password));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chose);
         initViews();

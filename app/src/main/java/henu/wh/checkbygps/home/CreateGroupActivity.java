@@ -1,16 +1,23 @@
 package henu.wh.checkbygps.home;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+
+import com.alibaba.fastjson.JSONObject;
+
 import java.sql.Connection;
 
+import henu.wh.checkbygps.LoginActivity;
 import henu.wh.checkbygps.R;
+import henu.wh.checkbygps.client.Client;
 import henu.wh.checkbygps.dbHelper.JdbcUtil;
 import henu.wh.checkbygps.help.Helper;
 import henu.wh.checkbygps.help.Init;
@@ -22,6 +29,7 @@ public class CreateGroupActivity extends AppCompatActivity implements Init {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTitle(getResources().getText(R.string.app_create_group));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_group);
         initViews();
@@ -43,12 +51,13 @@ public class CreateGroupActivity extends AppCompatActivity implements Init {
 
     public void createGroup() {
         new Thread(new Runnable() {
-            @Override
             public void run() {
                 String groupname = eTgroupname.getText().toString();
-                Connection conn = JdbcUtil.conn();
-                JdbcUtil.insertGroup(conn, Helper.randomGID(), groupname, HomeActivity.user1.getPhone());
-                JdbcUtil.close(conn);
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("gname", groupname);
+                jsonObject.put("manager", LoginActivity.user.getPhone());
+                jsonObject.put("operation", "createG");
+                Client.getClient().send(jsonObject);
             }
         }).start();
     }

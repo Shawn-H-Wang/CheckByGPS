@@ -3,6 +3,7 @@ package henu.wh.checkbygps.register;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -15,26 +16,28 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.JSONObject;
 import com.mob.MobSDK;
 
 import java.sql.Connection;
 
 import cn.smssdk.EventHandler;
 import cn.smssdk.SMSSDK;
-import henu.wh.checkbygps.LoginActivity;
 import henu.wh.checkbygps.MainActivity;
 import henu.wh.checkbygps.R;
+import henu.wh.checkbygps.client.Client;
 import henu.wh.checkbygps.help.Helper;
 import henu.wh.checkbygps.dbHelper.JdbcUtil;
 import henu.wh.checkbygps.help.Init;
+import henu.wh.checkbygps.role.User;
 
 public class VerifyActivity extends AppCompatActivity implements Init {
 
-    private static String username, userpasswd;
-    private static boolean sex, identify;
     private static volatile boolean FLAG = false;
     private String code;
     private boolean flag;
+    private static User user;
 
     private EditText userphone, verifycode;
     private Button mBtnverifyCode, mBtnregister, mBtnback;
@@ -48,6 +51,7 @@ public class VerifyActivity extends AppCompatActivity implements Init {
     /**
      * 使用Handler来分发Message对象到主线程中，处理事件
      */
+    @SuppressLint("HandlerLeak")
     Handler handler = new Handler() {
         @Override
         public void handleMessage(@NonNull Message msg) {
@@ -65,17 +69,18 @@ public class VerifyActivity extends AppCompatActivity implements Init {
             if (result == SMSSDK.RESULT_COMPLETE) { //回调完成
                 if (event == SMSSDK.EVENT_SUBMIT_VERIFICATION_CODE) {//提交验证码成功
                     Log.d("SMSSDK", "验证码输入正确");
-                    register(); // 连接数据库进行注册
+                    register(); // 连接服务器进行注册
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                     if (VerifyActivity.FLAG) {
-                        Intent intent = new Intent();
-                        intent.setClass(VerifyActivity.this, MainActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                        startActivity(intent);
+                        showMessage("注册成功！");
+                        RegisterActivity.iSfinish = true;
+                        finish();
+                    } else {
+                        showMessage("注册失败，请稍后重试");
                     }
                 }
             } else {    //回调失败
@@ -91,6 +96,7 @@ public class VerifyActivity extends AppCompatActivity implements Init {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTitle(getResources().getText(R.string.app_register));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_verify);
 
@@ -173,11 +179,8 @@ public class VerifyActivity extends AppCompatActivity implements Init {
         }
     }
 
-    public static void getData(String username, String userpasswd, boolean sex, boolean identify) {
-        VerifyActivity.username = username;
-        VerifyActivity.userpasswd = userpasswd;
-        VerifyActivity.sex = sex;
-        VerifyActivity.identify = identify;
+    public static void getUser(User user) {
+        VerifyActivity.user = user;
     }
 
     public void showMessage(String message) {
@@ -211,50 +214,35 @@ public class VerifyActivity extends AppCompatActivity implements Init {
     }
 
     public void register() {
-        //由于Android Studio访问mysql数据库不能在主进程Activity中直接访问，所以访问mysql的方法要写在新的线程中
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                if (insertInfo(userphone.getText().toString(), VerifyActivity.username, VerifyActivity.userpasswd, VerifyActivity.sex, VerifyActivity.identify)) {
-                    VerifyActivity.FLAG = true; // 表示注册成功
-                    // 这里开启了一个新进程，Toast调用法时需要用到Looper的prepare进行准备
-                    Looper.prepare();
-                    showMessage("注册成功");
-                    Looper.loop();
+        JSONObject jsonObject = new JSONObject();
+        try {
+            VerifyActivity.user.setPhone(userphone.getText().toString());
+            jsonObject.put("phone", user.getPhone());
+            jsonObject.put("passwd", user.getPassword());
+            jsonObject.put("name", user.getName());
+            jsonObject.put("sex", user.isSex());
+            jsonObject.put("iden", user.isIdentify());
+            jsonObject.put("operation", user.getOpeartion());
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Client.getClient().send(jsonObject);
                 }
-            }
-        }).start();
-    }
-
-    /**
-     * <p>注册输入信息</p>
-     *
-     * @param userphone 用户手机号，表主键
-     * @param username  用户名
-     * @param password  用户密码
-     * @param sex       true为男性，false为女性
-     * @param identify  true为学生，false为教师
-     * @return true表示注册成功，false表示注册失败，失败并弹出错误信息
-     */
-    public boolean insertInfo(String userphone, String username, String password, boolean sex,
-                              boolean identify) {
-        boolean flag = false;
-        // 与数据库建立连接
-        Connection conn = JdbcUtil.conn();
-        // 查询该账户是否被注册
-        if (JdbcUtil.selectPhone(conn, userphone)) { // 返回为true说明未被注册，则可以注册，将注册信息传入方法中
-            JdbcUtil.insertUSER(conn, userphone, username, password, sex, identify);
-            flag = true;
-            VerifyActivity.FLAG = true;
-        } else {
-            // 这里开启了一个新进程，Toast调用法法师需要用到Looper的prepare进行准备
-            Looper.prepare();
-            showMessage("注册失败！该号码已被使用，请更换号码！");
-            Looper.loop();
+            }).start();
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    VerifyActivity.FLAG = Client.getClient().readBoolean();
+                }
+            }).start();
+            Thread.sleep(500);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            user.setOpeartion("");  // 清空操作
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        // 关闭数据库
-        JdbcUtil.close(conn);
-        return flag;
+        user.setOpeartion("");  // 清空操作
     }
 
     @Override
