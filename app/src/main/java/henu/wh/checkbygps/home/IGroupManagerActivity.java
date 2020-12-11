@@ -66,9 +66,8 @@ public class IGroupManagerActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 String gid = gname.substring(0, gname.indexOf(":"));
-                SignInfoActivity.setGid(gid);
-                SignInfoActivity.setIsManager(false);
-                Intent intent = new Intent(IGroupManagerActivity.this, SignInfoActivity.class);
+                MemSignInfoActivity.setGid(gid);
+                Intent intent = new Intent(IGroupManagerActivity.this, MemSignInfoActivity.class);
                 startActivity(intent);
             }
         });

@@ -92,10 +92,6 @@ public class HomeActivity extends AppCompatActivity implements Init {
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
                 // 普通群事件监听
                 String group = childString1[groupPosition][childPosition];
-                /*AlertDialog.Builder builder = new AlertDialog.Builder(HomeActivity.this);
-                builder.setTitle("群聊" + childString1[groupPosition][childPosition].substring(childString1[groupPosition][childPosition].indexOf(":")));
-                builder.setMessage("你想做什么操作？");
-                builder.setIcon(R.mipmap.ic_launcher);*/
                 if (Arrays.asList(childString1[0]).contains(group)) {
                     MGroupManagerActivity.setGname(group);
                     Intent intent = new Intent(HomeActivity.this, MGroupManagerActivity.class);

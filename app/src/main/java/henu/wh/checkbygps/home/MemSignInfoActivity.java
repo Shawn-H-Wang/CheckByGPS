@@ -2,12 +2,11 @@ package henu.wh.checkbygps.home;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -16,39 +15,29 @@ import android.widget.TextView;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
-import org.w3c.dom.Text;
-
 import java.util.List;
 
-import henu.wh.checkbygps.LoginActivity;
 import henu.wh.checkbygps.R;
 import henu.wh.checkbygps.client.Client;
-import henu.wh.checkbygps.message.MessageActivity;
-import henu.wh.checkbygps.role.SignInfo;
+import henu.wh.checkbygps.role.MemSignInfo;
 
-public class SignInfoActivity extends AppCompatActivity {
+public class MemSignInfoActivity extends AppCompatActivity {
 
     private Button back;
     private ListView signInfo;
     private static String gid;
-    private static boolean isManager;
-    private volatile static List<SignInfo> signInfoList;
-
+    private volatile static List<MemSignInfo> signInfoList;
 
     public static void setGid(String gid) {
-        SignInfoActivity.gid = gid;
-    }
-
-    public static void setIsManager(boolean isManager) {
-        SignInfoActivity.isManager = isManager;
+        MemSignInfoActivity.gid = gid;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_sign_info);
-        signInfo = (ListView) findViewById(R.id.signinfo_list);
-        back = (Button) findViewById(R.id.backSINFO);
+        setContentView(R.layout.activity_mem_sign_info);
+        signInfo = (ListView) findViewById(R.id.I_signinfo_list);
+        back = (Button) findViewById(R.id.I_backSINFO);
         getSignInfoList();
         SignInfoAdapter signInfoAdapter = new SignInfoAdapter(signInfoList);
         signInfo.setAdapter(signInfoAdapter);
@@ -58,14 +47,6 @@ public class SignInfoActivity extends AppCompatActivity {
                 finish();
             }
         });
-        signInfo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                FullMemberSignInfoActivity.setGidSignid(gid, signInfoList.get(position).getSignID());
-                Intent intent = new Intent(SignInfoActivity.this, FullMemberSignInfoActivity.class);
-                startActivity(intent);
-            }
-        });
     }
 
     private void getSignInfoList() {
@@ -73,7 +54,7 @@ public class SignInfoActivity extends AppCompatActivity {
             @Override
             public void run() {
                 JSONObject jsonObject = new JSONObject();
-                jsonObject.put("tag1", isManager);
+                jsonObject.put("tag1", false);
                 jsonObject.put("want", "signinfo");
                 jsonObject.put("gid", gid);
                 Client.getClient().send(jsonObject);
@@ -90,7 +71,7 @@ public class SignInfoActivity extends AppCompatActivity {
                 String s = Client.getClient().read();
                 JSONObject jsonObject = JSONObject.parseObject(s);
                 JSONArray o1 = (JSONArray) jsonObject.get("signInfo");
-                signInfoList = o1.toJavaList(SignInfo.class);
+                signInfoList = o1.toJavaList(MemSignInfo.class);
             }
         }).start();
         try {
@@ -102,9 +83,9 @@ public class SignInfoActivity extends AppCompatActivity {
 
     private class SignInfoAdapter extends BaseAdapter {
 
-        List<SignInfo> signInfoList;
+        List<MemSignInfo> signInfoList;
 
-        public SignInfoAdapter(List<SignInfo> signInfoList) {
+        public SignInfoAdapter(List<MemSignInfo> signInfoList) {
             this.signInfoList = signInfoList;
         }
 
@@ -134,11 +115,14 @@ public class SignInfoActivity extends AppCompatActivity {
                 viewHolder.signID = (TextView) convertView.findViewById(R.id.message_content);
                 viewHolder.signDate = (TextView) convertView.findViewById(R.id.message_date);
                 convertView.setTag(viewHolder);
-                String signID = signInfoList.get(position).getSignID();
-                String date = signInfoList.get(position).getDate();
-                viewHolder.signInfo.setText("群签到");
+                String signID = signInfoList.get(position).getSignid();
+                String date = signInfoList.get(position).getSigndate();
+                viewHolder.signInfo.setText("签到");
                 viewHolder.signID.setText(signID);
-                viewHolder.signDate.setText(date);
+                viewHolder.signDate.setText(date.isEmpty() ? "为签到" : date);
+                viewHolder.signInfo.setTextColor(Color.parseColor("#000000"));
+                viewHolder.signID.setTextColor(Color.parseColor("#000000"));
+                viewHolder.signDate.setTextColor(Color.parseColor("#000000"));
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }

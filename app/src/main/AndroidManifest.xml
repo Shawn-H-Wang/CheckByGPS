@@ -2,19 +2,23 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="henu.wh.checkbygps">
 
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.READ_CONTACTS" />
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.RECEIVE_SMS" />
-    <uses-permission android:name="android.permission.READ_SMS" />
+    <!--GPS定位-->
+    <uses-permission android:name="com.android.launcher.permission.READ_SETTINGS" />
     <uses-permission android:name="android.permission.GET_TASKS" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" /> <!-- 访问网络，进行地图相关业务数据请求，包括地图数据，路线规划，POI检索等 -->
-    <uses-permission android:name="android.permission.INTERNET" /> <!-- 获取网络状态，根据网络状态切换进行数据请求网络转换 -->
-    <!-- 读取外置存储。如果开发者使用了so动态加载功能并且把so文件放在了外置存储区域，则需要申请该权限，否则不需要 -->
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" /> <!-- 写外置存储。如果开发者使用了离线地图，并且数据写在外置存储区域，则需要申请该权限 -->
+    <!--GPS定位-->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"></uses-permission>
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="com.android.launcher.permission.READ_SETTINGS" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -23,6 +27,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".home.MapActivity"></activity>
+        <activity android:name=".home.FullMemberSignInfoActivity" />
+        <activity android:name=".home.MemSignInfoActivity" />
         <activity android:name=".home.SignInfoActivity" />
         <activity android:name=".home.MemberInfoActivity" />
         <activity android:name=".home.IGroupManagerActivity" />
@@ -42,7 +49,7 @@
         <activity android:name=".LoginActivity" />
         <activity android:name=".register.RegisterActivity" />
         <activity android:name=".forgetpasswd.ForgetPasswordActivity" />
-        <activity android:name=".MainActivity">
+        <activity android:9name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -60,14 +67,14 @@
         <meta-data
             android:name="Mob-AppSecret"
             android:value="70088e2559f5bde6bd112fd9414b7b17" />
-<!--        <meta-data-->
-<!--            android:name="com.baidu.lbsapi.API_KEY"-->
-<!--            android:value="TIxcmByutCVLwenCtuiEFGoND3XTfNvt" />-->
+        <meta-data
+            android:name="com.baidu.lbsapi.API_KEY"
+            android:value="GdQIof7KS6xfXbbSrBYW1rhGcYtU5Fmc" />
 
-<!--        <service-->
-<!--            android:name="com.baidu.location.f"-->
-<!--            android:enabled="true"-->
-<!--            android:process=":remote" />-->
+        <service
+            android:name="com.baidu.location.f"
+            android:enabled="true"
+            android:process=":remote" />
     </application>
 
 </manifest>

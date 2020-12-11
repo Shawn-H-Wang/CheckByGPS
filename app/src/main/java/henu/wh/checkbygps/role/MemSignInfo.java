@@ -8,6 +8,10 @@ public class MemSignInfo {
     private String jingdu;
     private String weidu;
     private String signdate;
+    private Boolean sign;
+
+    public MemSignInfo() {
+    }
 
     public MemSignInfo(String signid, String uid, String gid, String jingdu, String weidu, String signdate) {
         this.signid = signid;
@@ -16,6 +20,7 @@ public class MemSignInfo {
         this.jingdu = jingdu;
         this.weidu = weidu;
         this.signdate = signdate;
+        this.sign = false;
     }
 
     public String getSignid() {
@@ -64,6 +69,14 @@ public class MemSignInfo {
 
     public void setSigndate(String signdate) {
         this.signdate = signdate;
+    }
+
+    public Boolean getSign() {
+        return sign;
+    }
+
+    public void setSign(Boolean sign) {
+        this.sign = sign;
     }
 
     @Override

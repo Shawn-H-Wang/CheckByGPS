@@ -3,9 +3,11 @@ package henu.wh.checkbygps.help;
 import android.annotation.SuppressLint;
 import android.icu.text.SimpleDateFormat;
 import android.os.Build;
+import android.os.Environment;
 
 import androidx.annotation.RequiresApi;
 
+import java.io.File;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,5 +40,28 @@ public class Helper {
         return df.format(new Date());
     }
 
+    public static void exportExcel() {
+        File file = new File(getSDPath() + "/Record");
+        makeDir(file);
+        ExcelUtils.initExcel(file.toString() + "/成绩表.xls", null);
+        String fileName = getSDPath() + "/Record/成绩表.xls";
+    }
 
+    private static String getSDPath() {
+        File sdDir = null;
+        boolean sdCardExist = Environment.getExternalStorageState().equals(
+                android.os.Environment.MEDIA_MOUNTED);
+        if (sdCardExist) {
+            sdDir = Environment.getExternalStorageDirectory();
+        }
+        String dir = sdDir.toString();
+        return dir;
+    }
+
+    public static void makeDir(File dir) {
+        if (!dir.getParentFile().exists()) {
+            makeDir(dir.getParentFile());
+        }
+        dir.mkdir();
+    }
 }

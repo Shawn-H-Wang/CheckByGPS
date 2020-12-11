@@ -1,9 +1,8 @@
 package henu.wh.checkbygps.message;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,6 +13,8 @@ import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
@@ -23,6 +24,7 @@ import java.util.List;
 
 import henu.wh.checkbygps.R;
 import henu.wh.checkbygps.client.Client;
+import henu.wh.checkbygps.home.MapActivity;
 
 public class MessageActivity extends AppCompatActivity {
 
@@ -88,7 +90,9 @@ public class MessageActivity extends AppCompatActivity {
                     }).create();
                     alertDialog.show();
                 } else if (mtype.equals("sign")) {
-
+                    MapActivity.setMessage(Mlist.get(position));
+                    Intent intent = new Intent(MessageActivity.this, MapActivity.class);
+                    startActivity(intent);
                 }
             }
         });
@@ -177,6 +181,7 @@ public class MessageActivity extends AppCompatActivity {
                     viewHolder.m_content.setText("用户：" + memid + "，请求加入群聊：" + gid + ":" + gname);
                 } else if (mtype.equals("sign")) {
                     mtype = "签到";
+                    viewHolder.m_content.setText(message);
                 } else if (mtype.equals("mesg")) {
                     mtype = "群聊处理";
                     viewHolder.m_content.setText(message);
