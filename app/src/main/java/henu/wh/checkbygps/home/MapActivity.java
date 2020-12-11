@@ -44,14 +44,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import henu.wh.checkbygps.LoginActivity;
 import henu.wh.checkbygps.R;
+import henu.wh.checkbygps.role.MemSignInfo;
 
 
 public class MapActivity extends BaseActivity implements SensorEventListener, View.OnClickListener {
     /**
      * 规定到达距离范围距离
      */
-    private int DISTANCE = 200;
+    private int DISTANCE = 750;
 
     private MapView mMapView;
     private TextView mDistance_tv;
@@ -117,13 +119,11 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
 
     private void setCircleOptions() {
         if (mDestinationPoint == null) return;
-        OverlayOptions ooCircle = new CircleOptions().fillColor(0x4057FFF8)
-                .center(mDestinationPoint).stroke(new Stroke(1, 0xB6FFFFFF)).radius(DISTANCE);
+        OverlayOptions ooCircle = new CircleOptions().fillColor(0x0DF0FFFF)
+                .center(mDestinationPoint).stroke(new Stroke(1, 0xF257FFF8)).radius(DISTANCE);
         mBaiduMap.addOverlay(ooCircle);
     }
 
-
-//
 
     /***
      * 定位选项设置
@@ -182,6 +182,8 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
             super.handleMessage(msg);
             BDLocation location = (BDLocation) msg.obj;
             LatLng LocationPoint = new LatLng(location.getLatitude(), location.getLongitude());
+            System.out.println(location.getLatitude());
+            System.out.println(location.getLongitude());
             int code = location.getLocType();
             System.out.println("code= " + code);
             System.out.println("code= " + code);
@@ -190,30 +192,30 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
             System.out.println("code= " + code);
 
             System.out.println("code= " + code);
-            setTextOption(mDestinationPoint, "错误代码：" + code, "#7ED321");
+            // setTextOption(mDestinationPoint, "错误代码：" + code, "#7ED321");
 
             //打卡范围
-            mDestinationPoint = new LatLng(114.322738 * 1.00001, 34.819874 * 1.00001);//假设公司坐标
+            mDestinationPoint = new LatLng(34.822891, 114.316001);//假设公司坐标
             setCircleOptions();
             //计算两点距离,单位：米
             mDistance = DistanceUtil.getDistance(mDestinationPoint, LocationPoint);
             if (mDistance <= DISTANCE) {
                 //显示文字
-                setTextOption(mDestinationPoint, "您已在签到范围内", "#7ED321");
+                // setTextOption(mDestinationPoint, "您已在签到范围内", "#7ED321");
                 //目的地图标
                 setMarkerOptions(mDestinationPoint, R.mipmap.arrive_icon);
                 //按钮颜色
                 commit_bt.setBackgroundDrawable(getResources().getDrawable(R.mipmap.restaurant_btbg_yellow));
                 mBaiduMap.setMyLocationEnabled(false);
             } else {
-                setTextOption(LocationPoint, "您不在签到范围之内", "#FF6C6C");
-                setMarkerOptions(mDestinationPoint, R.mipmap.arrive_icon);
+                // setTextOption(LocationPoint, "您不在签到范围之内", "#FF6C6C");
+                setMarkerOptions(mDestinationPoint, R.mipmap.restaurant_icon);
                 commit_bt.setBackgroundDrawable(getResources().getDrawable(R.mipmap.restaurant_btbg_gray));
                 mBaiduMap.setMyLocationEnabled(true);
             }
             mDistance_tv.setText("距离目的地：" + mDistance + "米");
             //缩放地图
-            //setMapZoomScale(LocationPoint);
+            // setMapZoomScale(LocationPoint);
         }
     };
 
@@ -255,6 +257,9 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
 
     //改变地图缩放
     private void setMapZoomScale(LatLng ll) {
+//        MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll, 16);   //设置地图中心点以及缩放级别
+//        MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(ll);
+//        mBaiduMap.animateMapStatus(u);
         if (mDestinationPoint == null) {
             mZoomScale = getZoomScale(ll);
             mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(ll, mZoomScale));//缩放
@@ -369,9 +374,16 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
     public void onClick(View view) {
         if (view.getId() == R.id.arriver_bt) {
             if (mDistance <= DISTANCE) {
-                Toast.makeText(this, "打卡成功", Toast.LENGTH_SHORT).show();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String phone = LoginActivity.user.getPhone();
+                        MemSignInfo memSignInfo = new MemSignInfo();
+                    }
+                }).start();
+                Toast.makeText(this, "签到成功", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "外勤打卡", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "打卡失败，不在签到范围", Toast.LENGTH_SHORT).show();
             }
 
         }
