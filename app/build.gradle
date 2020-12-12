@@ -68,6 +68,7 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.2.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
+    implementation 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:+'
     implementation files('libs/json-lib-2.4-jdk15.jar')
     implementation files('libs/gson-2.7.jar')
     implementation files('libs/BaiduLBS_Android.jar')

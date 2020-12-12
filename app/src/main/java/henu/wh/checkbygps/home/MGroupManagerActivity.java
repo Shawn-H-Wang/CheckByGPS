@@ -1,8 +1,5 @@
 package henu.wh.checkbygps.home;
 
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -13,14 +10,14 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.alibaba.fastjson.JSONObject;
-import com.baidu.mapapi.map.MapView;
+import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 
-import henu.wh.checkbygps.LoginActivity;
+import com.alibaba.fastjson.JSONObject;
+
 import henu.wh.checkbygps.R;
 import henu.wh.checkbygps.client.Client;
 import henu.wh.checkbygps.help.Helper;
-import henu.wh.checkbygps.role.SignInfo;
 
 public class MGroupManagerActivity extends AppCompatActivity {
 
@@ -96,8 +93,8 @@ public class MGroupManagerActivity extends AppCompatActivity {
                                 JSONObject jsonObject = new JSONObject();
                                 jsonObject.put("operation", "sendsignG");
                                 jsonObject.put("gid", gid);
-                                jsonObject.put("Locatiojn1", "114.322738");
-                                jsonObject.put("Locatiojn2", "34.819874");
+                                jsonObject.put("Locatiojn1", "-122.084094");
+                                jsonObject.put("Locatiojn2", "37.421946");
                                 jsonObject.put("SignID", gid + Helper.randomGID());
                                 Client.getClient().send(jsonObject);
                             }

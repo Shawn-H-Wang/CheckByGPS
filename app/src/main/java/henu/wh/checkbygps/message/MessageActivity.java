@@ -180,8 +180,10 @@ public class MessageActivity extends AppCompatActivity {
                     String gname = jsonObject.getString("gname");
                     viewHolder.m_content.setText("用户：" + memid + "，请求加入群聊：" + gid + ":" + gname);
                 } else if (mtype.equals("sign")) {
-                    mtype = "签到";
-                    viewHolder.m_content.setText(message);
+                    mtype = "群签到";
+                    JSONObject js = JSONObject.parseObject(message);
+                    String signid = js.getString("signid");
+                    viewHolder.m_content.setText("签到ID：" + signid);
                 } else if (mtype.equals("mesg")) {
                     mtype = "群聊处理";
                     viewHolder.m_content.setText(message);
@@ -211,6 +213,10 @@ public class MessageActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
+        getMessage();
+        setMessageList();
+        MyMessageAdapter myMessageAdapter = new MyMessageAdapter(Mlist);
+        mlist.setAdapter(myMessageAdapter);
     }
+
 }

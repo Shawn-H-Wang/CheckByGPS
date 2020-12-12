@@ -3,24 +3,27 @@ package henu.wh.checkbygps.role;
 public class MemSignInfo {
 
     private String signid;
+    private String name;
     private String uid;
     private String gid;
     private String jingdu;
     private String weidu;
     private String signdate;
     private Boolean sign;
+    private String signType;
 
-    public MemSignInfo() {
-    }
-
-    public MemSignInfo(String signid, String uid, String gid, String jingdu, String weidu, String signdate) {
+    public MemSignInfo(String signid, String uid, String gid, String jingdu, String weidu, String signdate, String signType) {
         this.signid = signid;
         this.uid = uid;
         this.gid = gid;
         this.jingdu = jingdu;
         this.weidu = weidu;
         this.signdate = signdate;
+        this.signType = signType;
         this.sign = false;
+    }
+
+    public MemSignInfo() {
     }
 
     public String getSignid() {
@@ -77,6 +80,22 @@ public class MemSignInfo {
 
     public void setSign(Boolean sign) {
         this.sign = sign;
+    }
+
+    public String getSignType() {
+        return signType;
+    }
+
+    public void setSignType(String signType) {
+        this.signType = signType;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override

@@ -8,6 +8,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -17,6 +18,9 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.RequiresApi;
+
+import com.alibaba.fastjson.JSONObject;
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
@@ -27,6 +31,7 @@ import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.CircleOptions;
 import com.baidu.mapapi.map.InfoWindow;
+import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.MarkerOptions;
@@ -46,7 +51,8 @@ import java.util.List;
 
 import henu.wh.checkbygps.LoginActivity;
 import henu.wh.checkbygps.R;
-import henu.wh.checkbygps.role.MemSignInfo;
+import henu.wh.checkbygps.client.Client;
+import henu.wh.checkbygps.help.Helper;
 
 
 public class MapActivity extends BaseActivity implements SensorEventListener, View.OnClickListener {
@@ -66,6 +72,7 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
     private LocationClientOption mOption;//定位属性
     private MyLocationData locData;//定位坐标
     private InfoWindow mInfoWindow;//地图文字位置提醒
+    private volatile double d1 = 0.0, d2 = 0.0;
     private double mCurrentLat = 0.0;
     private double mCurrentLon = 0.0;
     private int mCurrentDirection = 0;
@@ -73,7 +80,8 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
     private LatLng mCenterPos;
     private float mZoomScale = 0; //比例
     private Double lastX = 0.0;
-    private static henu.wh.checkbygps.message.Message message;
+    private volatile static henu.wh.checkbygps.message.Message message;
+    private volatile static boolean FLAG = false;
 
     public static void setMessage(henu.wh.checkbygps.message.Message message) {
         MapActivity.message = message;
@@ -81,6 +89,34 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
 
     @Override
     protected int getConentView() {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                JSONObject js = new JSONObject();
+                js.put("want", "signJWD");
+                js.put("signID", JSONObject.parseObject(message.getMessage()).getString("signid"));
+                Client.getClient().send(js);
+            }
+        }).start();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String s = Client.getClient().read();
+                JSONObject js = JSONObject.parseObject(s);
+                d1 = Double.parseDouble(js.getString("jingdu"));
+                d2 = Double.parseDouble(js.getString("weidu"));
+            }
+        }).start();
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         SDKInitializer.initialize(getApplicationContext());//百度地图
         // 注册 SDK 广播监听者
         RegisterBroadcast();
@@ -193,9 +229,8 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
 
             System.out.println("code= " + code);
             // setTextOption(mDestinationPoint, "错误代码：" + code, "#7ED321");
-
             //打卡范围
-            mDestinationPoint = new LatLng(34.822891, 114.316001);//假设公司坐标
+            mDestinationPoint = new LatLng(d2, d1);
             setCircleOptions();
             //计算两点距离,单位：米
             mDistance = DistanceUtil.getDistance(mDestinationPoint, LocationPoint);
@@ -215,7 +250,7 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
             }
             mDistance_tv.setText("距离目的地：" + mDistance + "米");
             //缩放地图
-            // setMapZoomScale(LocationPoint);
+            setMapZoomScale(LocationPoint);
         }
     };
 
@@ -258,15 +293,15 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
     //改变地图缩放
     private void setMapZoomScale(LatLng ll) {
 //        MapStatusUpdate u = MapStatusUpdateFactory.newLatLngZoom(ll, 16);   //设置地图中心点以及缩放级别
-//        MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(ll);
-//        mBaiduMap.animateMapStatus(u);
-        if (mDestinationPoint == null) {
-            mZoomScale = getZoomScale(ll);
-            mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(ll, mZoomScale));//缩放
-        } else {
-            mZoomScale = getZoomScale(ll);
-            mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(mCenterPos, mZoomScale));//缩放
-        }
+        MapStatusUpdate u = MapStatusUpdateFactory.newLatLng(ll);
+        mBaiduMap.animateMapStatus(u);
+//        if (mDestinationPoint == null) {
+//            mZoomScale = getZoomScale(ll);
+//            mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(ll, mZoomScale));//缩放
+//        } else {
+//            mZoomScale = getZoomScale(ll);
+//            mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newLatLngZoom(mCenterPos, mZoomScale));//缩放
+//        }
     }
 
     /**
@@ -373,17 +408,55 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.arriver_bt) {
+            new Thread(new Runnable() {
+                @RequiresApi(api = Build.VERSION_CODES.N)
+                @Override
+                public void run() {
+                    JSONObject js = JSONObject.parseObject(MapActivity.message.getMessage());
+                    String phone = LoginActivity.user.getPhone();
+                    JSONObject send = new JSONObject();
+                    send.put("operation", "user_sign");
+                    send.put("uid", phone);
+                    send.put("signdate", Helper.randomGID());
+                    send.put("gid", js.getString("gid"));
+                    send.put("signid", js.getString("signid"));
+                    send.put("weidu", String.valueOf(mCurrentLat));
+                    send.put("jingdu", String.valueOf(mCurrentLon));
+                    send.put("messid", message.getMid());
+                    send.put("type", mDistance <= DISTANCE ? "范围内打卡成功" : "外勤打卡");
+                    Client.getClient().send(send);
+                }
+            }).start();
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    FLAG = Client.getClient().readBoolean();
+                }
+            }).start();
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             if (mDistance <= DISTANCE) {
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        String phone = LoginActivity.user.getPhone();
-                        MemSignInfo memSignInfo = new MemSignInfo();
-                    }
-                }).start();
-                Toast.makeText(this, "签到成功", Toast.LENGTH_SHORT).show();
+                if (FLAG) {
+                    commit_bt.setClickable(false);
+                    Toast.makeText(this, "签到成功", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "服务器异常，请稍后尝试", Toast.LENGTH_SHORT).show();
+                }
             } else {
-                Toast.makeText(this, "打卡失败，不在签到范围", Toast.LENGTH_SHORT).show();
+                if (FLAG) {
+                    commit_bt.setClickable(false);
+                    Toast.makeText(this, "外勤签到", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "服务器异常，请稍后尝试", Toast.LENGTH_SHORT).show();
+                }
             }
 
         }
