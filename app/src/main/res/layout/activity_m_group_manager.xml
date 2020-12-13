@@ -38,6 +38,12 @@
         android:text="查看签到记录" />
 
     <Button
+        android:id="@+id/mysignInfoMG"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="查看个人签到信息" />
+
+    <Button
         android:id="@+id/signMG"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

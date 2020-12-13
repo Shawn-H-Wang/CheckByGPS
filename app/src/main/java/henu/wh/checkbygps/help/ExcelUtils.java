@@ -10,6 +10,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import henu.wh.checkbygps.home.FullMemberSignInfoActivity;
 import jxl.Workbook;
 import jxl.WorkbookSettings;
 import jxl.format.Colour;
@@ -76,6 +77,9 @@ public class ExcelUtils {
             File file = new File(fileName);
             if (!file.exists()) {
                 file.createNewFile();
+            } else {
+                file.delete();
+                file.createNewFile();
             }
             workbook = Workbook.createWorkbook(file);
             WritableSheet sheet = workbook.createSheet("签到记录", 0);
@@ -131,6 +135,7 @@ public class ExcelUtils {
 
                 writebook.write();
                 Toast.makeText(c, "导出到手机存储中文件夹成功", Toast.LENGTH_SHORT).show();
+                FullMemberSignInfoActivity.daochu.setEnabled(false);
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {

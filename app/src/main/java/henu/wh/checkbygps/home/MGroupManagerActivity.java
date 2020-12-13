@@ -21,7 +21,7 @@ import henu.wh.checkbygps.help.Helper;
 
 public class MGroupManagerActivity extends AppCompatActivity {
 
-    private Button deleteGroup, memGroup, signGroup, signInfo, back;
+    private Button deleteGroup, memGroup, signGroup, signInfo, back, mysignInfo;
     private TextView tvGroup;
     private static String gname;
 
@@ -93,8 +93,8 @@ public class MGroupManagerActivity extends AppCompatActivity {
                                 JSONObject jsonObject = new JSONObject();
                                 jsonObject.put("operation", "sendsignG");
                                 jsonObject.put("gid", gid);
-                                jsonObject.put("Locatiojn1", "-122.084094");
-                                jsonObject.put("Locatiojn2", "37.421946");
+                                jsonObject.put("Locatiojn1", "114.322738");
+                                jsonObject.put("Locatiojn2", "34.819874");
                                 jsonObject.put("SignID", gid + Helper.randomGID());
                                 Client.getClient().send(jsonObject);
                             }
@@ -127,6 +127,15 @@ public class MGroupManagerActivity extends AppCompatActivity {
                 alertDialog.show();
             }
         });
+        mysignInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String gid = gname.substring(0, gname.indexOf(":"));
+                MemSignInfoActivity.setGid(gid);
+                Intent intent = new Intent(MGroupManagerActivity.this, MemSignInfoActivity.class);
+                startActivity(intent);
+            }
+        });
         signInfo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -151,6 +160,7 @@ public class MGroupManagerActivity extends AppCompatActivity {
         signGroup = (Button) findViewById(R.id.signMG);
         signInfo = (Button) findViewById(R.id.signInfoMG);
         back = (Button) findViewById(R.id.backMG);
+        mysignInfo = (Button) findViewById(R.id.mysignInfoMG);
         tvGroup = (TextView) findViewById(R.id.mgname);
     }
 

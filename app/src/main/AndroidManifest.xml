@@ -2,8 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="henu.wh.checkbygps">
-
-    <!--GPS定位-->
+    <!-- GPS定位 -->
     <uses-permission android:name="com.android.launcher.permission.READ_SETTINGS" />
     <uses-permission android:name="android.permission.GET_TASKS" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
@@ -22,13 +21,14 @@
 
     <application
         android:allowBackup="true"
+        android:configChanges="keyboardHidden|orientation|screenSize"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:configChanges="keyboardHidden|orientation|screenSize"
         android:theme="@style/AppTheme">
-        <activity android:name=".home.MapActivity"></activity>
+        <activity android:name=".home.MapMakerActivity"></activity>
+        <activity android:name=".home.MapActivity" />
         <activity android:name=".home.FullMemberSignInfoActivity" />
         <activity android:name=".home.MemSignInfoActivity" />
         <activity android:name=".home.SignInfoActivity" />
@@ -70,7 +70,7 @@
             android:value="70088e2559f5bde6bd112fd9414b7b17" />
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
-            android:value="GdQIof7KS6xfXbbSrBYW1rhGcYtU5Fmc" />
+            android:value="q5csN7h0wXprGLlCU98yLibG0LVqU58D" />
 
         <service
             android:name="com.baidu.location.f"

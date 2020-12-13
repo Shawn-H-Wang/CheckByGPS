@@ -29,7 +29,8 @@ import henu.wh.checkbygps.role.User;
 
 public class FullMemberSignInfoActivity extends AppCompatActivity {
 
-    private Button button, daochu;
+    private static Button button;
+    public static Button daochu;
     private ListView listView;
     private File file;
     private String fileName;
@@ -161,10 +162,10 @@ public class FullMemberSignInfoActivity extends AppCompatActivity {
     }
 
     public void exportExcel() {
-        file = new File("data/data/henu.wh.checkbygps/files");
+        file = new File("sdcard/Android/data/henu.wh.checkbygps/files");
         makeDir(file);
         ExcelUtils.initExcel(file.toString() + "/" + signid + ".xls", title);
-        fileName = "data/data/henu.wh.checkbygps/files/" + signid + ".xls";
+        fileName = "sdcard/Android/data/henu.wh.checkbygps/files/" + signid + ".xls";
         ExcelUtils.writeObjListToExcel(getRecordData(), fileName, this);
     }
 
