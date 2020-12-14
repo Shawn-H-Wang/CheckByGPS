@@ -238,7 +238,9 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
                 //显示文字
                 // setTextOption(mDestinationPoint, "您已在签到范围内", "#7ED321");
                 //目的地图标
-                setMarkerOptions(mDestinationPoint, R.mipmap.arrive_icon);
+
+                setMarkerOptions(LocationPoint, R.mipmap.arrive_icon);
+                setMarkerOptions(mDestinationPoint, R.mipmap.restaurant_icon);
                 //按钮颜色
                 commit_bt.setBackgroundDrawable(getResources().getDrawable(R.mipmap.restaurant_btbg_yellow));
                 mBaiduMap.setMyLocationEnabled(false);

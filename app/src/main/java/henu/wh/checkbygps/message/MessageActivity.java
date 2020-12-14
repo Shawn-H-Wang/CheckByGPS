@@ -102,6 +102,9 @@ public class MessageActivity extends AppCompatActivity {
         if (jsonObject == null) {
             getMessage();
         }
+        while (null == jsonObject.get("messagelist")) {
+            getMessage();
+        }
         JSONArray msgs = (JSONArray) jsonObject.get("messagelist");
         Mlist = msgs.toJavaList(Message.class);
     }
