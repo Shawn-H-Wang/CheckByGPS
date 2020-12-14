@@ -34,6 +34,7 @@ import com.baidu.mapapi.map.InfoWindow;
 import com.baidu.mapapi.map.MapStatusUpdate;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.map.Marker;
 import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationData;
@@ -71,6 +72,7 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
     private LocationClient client;//定位监听
     private LocationClientOption mOption;//定位属性
     private MyLocationData locData;//定位坐标
+    private Marker mk;
     private InfoWindow mInfoWindow;//地图文字位置提醒
     private volatile double d1 = 0.0, d2 = 0.0;
     private double mCurrentLat = 0.0;
@@ -186,7 +188,7 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
         client.start();
     }
 
-    /***
+    /**
      * 接收定位结果消息，并显示在地图上
      */
     private BDAbstractLocationListener BDAblistener = new BDAbstractLocationListener() {
@@ -238,7 +240,6 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
                 //显示文字
                 // setTextOption(mDestinationPoint, "您已在签到范围内", "#7ED321");
                 //目的地图标
-
                 setMarkerOptions(LocationPoint, R.mipmap.arrive_icon);
                 setMarkerOptions(mDestinationPoint, R.mipmap.restaurant_icon);
                 //按钮颜色
@@ -279,17 +280,19 @@ public class MapActivity extends BaseActivity implements SensorEventListener, Vi
     }
 
     /**
-     * //     * 设置marker覆盖物
-     * //     *
-     * //     * @param ll   坐标
-     * //     * @param icon 图标
-     * //
+     * 设置marker覆盖物
+     *
+     * @param ll   坐标
+     * @param icon 图标
      */
     private void setMarkerOptions(LatLng ll, int icon) {
-        if (ll == null) return;
+        if (null == ll) return;
+        if (null != mk) {
+            mk.remove();
+        }
         BitmapDescriptor bitmap = BitmapDescriptorFactory.fromResource(icon);
         MarkerOptions ooD = new MarkerOptions().position(ll).icon(bitmap);
-        mBaiduMap.addOverlay(ooD);
+        mk = (Marker) mBaiduMap.addOverlay(ooD);
     }
 
     //改变地图缩放
